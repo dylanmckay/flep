@@ -6,7 +6,7 @@
 extern crate itertools;
 extern crate byteorder;
 
-pub use self::command_kind::{CommandKind, Command};
+pub use self::command_kind::CommandKind;
 pub use self::argument::Argument;
 pub use self::reply::Reply;
 pub use self::command::*;
