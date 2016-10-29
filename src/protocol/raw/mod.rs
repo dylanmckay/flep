@@ -1,6 +1,8 @@
 pub use self::port::PORT;
+pub use self::passive::PASV;
 
 pub mod port;
+pub mod passive;
 
 use std::io::prelude::*;
 use std::{io, fmt};
@@ -9,6 +11,7 @@ use std::{io, fmt};
 pub enum CommandKind
 {
     PORT(PORT),
+    PASV(PASV),
 }
 
 impl CommandKind
@@ -21,15 +24,22 @@ impl CommandKind
         let line_string = String::from_utf8(line_bytes).unwrap();
 
         // Split the line up.
-        let (command_name, payload) = line_string.split_at(line_string.chars().position(|c| c == ' ').expect("no space in line") + 1);
+        let (command_name, payload) = if line_string.contains(' ') {
+            let (command_name, payload) = line_string.split_at(line_string.chars().position(|c| c == ' ').expect("no space in line") + 1);
 
-        // We don't want to look at the space character.
-        let command_name = &command_name[0..command_name.len()-1];
+            // We don't want to look at the space character.
+            (&command_name[0..command_name.len()-1], payload)
+        } else {
+            // If the line has no space, it has no payload.
+            (line_string.as_str(), "")
+        };
+
 
         let mut payload_reader = io::BufReader::new(io::Cursor::new(payload));
 
         let command = match command_name {
             "PORT" => Ok(CommandKind::PORT(PORT::read_payload(&mut payload_reader)?)),
+            "PASV" => Ok(CommandKind::PASV(PASV::read_payload(&mut payload_reader)?)),
             _ => panic!("unknown command: {}", command_name),
         };
 
@@ -42,9 +52,19 @@ pub trait Command : Clone + fmt::Debug + PartialEq + Eq
 {
     /// Writes the command to a buffer.
     fn write(&self, write: &mut Write) -> Result<(), io::Error> {
-        write!(write, "{} ", self.command_name())?;
+        // Write the payload to a temporary space
+        let mut payload_buffer = io::Cursor::new(Vec::new());
+        self.write_payload(&mut payload_buffer)?;
+        let payload = payload_buffer.into_inner();
 
-        self.write_payload(write)?;
+        // Don't write a redundant space unless there actually is a payload.
+        if payload.is_empty() {
+            write!(write, "{}", self.command_name())?;
+        } else {
+            write!(write, "{} ", self.command_name())?;
+            write.write(&payload)?;
+        }
+
         Ok(())
     }
 
