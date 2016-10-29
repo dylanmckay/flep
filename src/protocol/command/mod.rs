@@ -3,6 +3,8 @@ pub use self::mode::{MODE, Mode};
 pub use self::basic::{ABOR, CDUP, NOOP, PASV, PWD, QUIT, REIN, STOU, SYST};
 pub use self::misc::USER;
 
+#[macro_use]
+pub mod macros;
 pub mod port;
 pub mod mode;
 /// Commands which take no arguments.
