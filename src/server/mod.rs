@@ -59,7 +59,7 @@ pub fn run() {
 
                     let uuid = Uuid::new_v4();
 
-                    let welcome = ::protocol::raw::Reply::new(200, "Hello There");
+                    let welcome = ::protocol::Reply::new(200, "Hello There");
                     welcome.write(&mut sock).unwrap();
 
                     clients.insert(uuid, Client {

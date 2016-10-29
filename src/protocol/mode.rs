@@ -1,4 +1,4 @@
-use raw::Argument;
+use Argument;
 
 use std::io::prelude::*;
 use std::io;
@@ -49,7 +49,7 @@ impl Argument for Mode
 mod test
 {
     use super::*;
-    use raw::{Command, CommandKind};
+    use {Command, CommandKind};
     use std::io;
 
     fn read(text: &str) -> MODE {

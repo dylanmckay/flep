@@ -1,4 +1,4 @@
-use raw::Command;
+use Command;
 use std::io::prelude::*;
 use std::io;
 
@@ -47,26 +47,25 @@ impl Command for PORT
 #[cfg(test)]
 mod test
 {
-    mod port {
-        use raw::*;
-        use std::io;
+    use {CommandKind, Command};
+    use super::*;
+    use std::io;
 
-        #[test]
-        fn correctly_writes_basic_packets() {
-            let packet = PORT { host_address: [127,0,0,1], port: 22 };
-            let raw_bytes = packet.bytes();
-            let text = String::from_utf8(raw_bytes).unwrap();
+    #[test]
+    fn correctly_writes_basic_packets() {
+        let packet = PORT { host_address: [127,0,0,1], port: 22 };
+        let raw_bytes = packet.bytes();
+        let text = String::from_utf8(raw_bytes).unwrap();
 
-            assert_eq!(text, "PORT 127,0,0,1,0,22");
-        }
+        assert_eq!(text, "PORT 127,0,0,1,0,22");
+    }
 
-        #[test]
-        fn correctly_reads_basic_packets() {
-            let raw_bytes = "PORT 192,168,1,1,255,255".as_bytes();
-            let command = CommandKind::read(&mut io::Cursor::new(raw_bytes.to_vec())).unwrap();
+    #[test]
+    fn correctly_reads_basic_packets() {
+        let raw_bytes = "PORT 192,168,1,1,255,255".as_bytes();
+        let command = CommandKind::read(&mut io::Cursor::new(raw_bytes.to_vec())).unwrap();
 
-            assert_eq!(command, CommandKind::PORT(PORT { host_address: [192,168,1,1], port: 65535 }));
-        }
+        assert_eq!(command, CommandKind::PORT(PORT { host_address: [192,168,1,1], port: 65535 }));
     }
 }
 

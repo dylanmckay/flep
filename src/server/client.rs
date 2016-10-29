@@ -1,5 +1,6 @@
 use Connection;
 use server::ClientState;
+use protocol;
 
 use std::io::prelude::*;
 use std::io;
@@ -23,7 +24,7 @@ impl Client
             let bytes_written = self.connection.pi.stream.read(&mut buffer)?;
             let mut data = io::Cursor::new(&buffer[0..bytes_written]);
 
-            let message = ::protocol::raw::CommandKind::read(&mut data)?;
+            let message = protocol::CommandKind::read(&mut data)?;
 
             println!("receiving data on PI stream: {:?}", message);
         } else {

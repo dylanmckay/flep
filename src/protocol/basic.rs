@@ -4,7 +4,7 @@ macro_rules! define_basic_command {
         pub use self::$module_name::$name;
 
         pub mod $module_name {
-            use raw::Command;
+            use Command;
             use std::io::prelude::*;
             use std::io;
 
@@ -22,7 +22,8 @@ macro_rules! define_basic_command {
             #[cfg(test)]
             mod test
             {
-                use raw::*;
+                use super::*;
+                use {Command, CommandKind};
                 use std::io;
 
                 #[test]
