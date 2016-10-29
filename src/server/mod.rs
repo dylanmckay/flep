@@ -59,8 +59,8 @@ pub fn run() {
 
                     let uuid = Uuid::new_v4();
 
-                    use std::io::Write;
-                    sock.write(format!("200 Hello There\r\n").as_bytes()).unwrap();
+                    let welcome = ::protocol::raw::Reply::new(200, "Hello There");
+                    welcome.write(&mut sock).unwrap();
 
                     clients.insert(uuid, Client {
                         uuid: uuid,
