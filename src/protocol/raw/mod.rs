@@ -1,5 +1,9 @@
+//! Raw FTP command definitions.
+//!
+//! http://www.nsftools.com/tips/RawFTP.htm
+
 pub use self::port::PORT;
-pub use self::basic::PASV;
+pub use self::basic::{ABOR, CDUP, NOOP, PASV, PWD, QUIT, REIN, STOU, SYST};
 
 pub mod port;
 /// Commands which take no arguments.
@@ -12,7 +16,24 @@ use std::{io, fmt};
 pub enum CommandKind
 {
     PORT(PORT),
+    // Abort the current file transfer.
+    ABOR(ABOR),
+    // Change directory up one level.
+    CDUP(CDUP),
+    // A no-operation.
+    NOOP(NOOP),
+    // Enable passive mode.
     PASV(PASV),
+    // Gets the name of the current working directory on the remote host.
+    PWD(PWD),
+    // Terminates the command connection.
+    QUIT(QUIT),
+    // Reinitializes the command connectio.
+    REIN(REIN),
+    // Begins transmission of a file to the remote site.
+    STOU(STOU),
+    // Returns a word identifying the system.
+    SYST(SYST),
 }
 
 impl CommandKind
@@ -40,7 +61,15 @@ impl CommandKind
 
         let command = match command_name {
             "PORT" => Ok(CommandKind::PORT(PORT::read_payload(&mut payload_reader)?)),
+            "ABOR" => Ok(CommandKind::ABOR(ABOR::read_payload(&mut payload_reader)?)),
+            "CDUP" => Ok(CommandKind::CDUP(CDUP::read_payload(&mut payload_reader)?)),
+            "NOOP" => Ok(CommandKind::NOOP(NOOP::read_payload(&mut payload_reader)?)),
             "PASV" => Ok(CommandKind::PASV(PASV::read_payload(&mut payload_reader)?)),
+            "PWD" => Ok(CommandKind::PWD(PWD::read_payload(&mut payload_reader)?)),
+            "QUIT" => Ok(CommandKind::QUIT(QUIT::read_payload(&mut payload_reader)?)),
+            "REIN" => Ok(CommandKind::REIN(REIN::read_payload(&mut payload_reader)?)),
+            "STOU" => Ok(CommandKind::STOU(STOU::read_payload(&mut payload_reader)?)),
+            "SYST" => Ok(CommandKind::SYST(SYST::read_payload(&mut payload_reader)?)),
             _ => panic!("unknown command: {}", command_name),
         };
 

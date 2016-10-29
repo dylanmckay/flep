@@ -1,26 +1,27 @@
-use raw::Command;
-use std::io::prelude::*;
-use std::io;
-
 /// Defines a packet which takes no arguments.
 macro_rules! define_basic_command {
-    ($name:ident) => {
-        #[derive(Clone, Debug, PartialEq, Eq)]
-        pub struct $name;
+    ($name:ident, $module_name:ident) => {
+        pub use self::$module_name::$name;
 
-        impl Command for $name
-        {
-            fn write_payload(&self, _: &mut Write) -> Result<(), io::Error> { Ok(()) }
-            fn read_payload(_: &mut BufRead) -> Result<Self, io::Error> { Ok($name) }
+        pub mod $module_name {
+            use raw::Command;
+            use std::io::prelude::*;
+            use std::io;
 
-            fn command_name(&self) -> &'static str { stringify!($name) }
-        }
+            #[derive(Clone, Debug, PartialEq, Eq)]
+            pub struct $name;
 
-        #[cfg(test)]
-        mod test
-        {
-            #[allow(non_snake_case)]
-            mod $name {
+            impl Command for $name
+            {
+                fn write_payload(&self, _: &mut Write) -> Result<(), io::Error> { Ok(()) }
+                fn read_payload(_: &mut BufRead) -> Result<Self, io::Error> { Ok($name) }
+
+                fn command_name(&self) -> &'static str { stringify!($name) }
+            }
+
+            #[cfg(test)]
+            mod test
+            {
                 use raw::*;
                 use std::io;
 
@@ -45,4 +46,21 @@ macro_rules! define_basic_command {
     }
 }
 
-define_basic_command!(PASV);
+// Abort the current file transfer.
+define_basic_command!(ABOR, abor);
+// Change directory up one level.
+define_basic_command!(CDUP, cdup);
+// A no-operation.
+define_basic_command!(NOOP, noop);
+// Enable passive mode.
+define_basic_command!(PASV, pasv);
+// Gets the name of the current working directory on the remote host.
+define_basic_command!(PWD, pwd);
+// Terminates the command connection.
+define_basic_command!(QUIT, quit);
+// Reinitializes the command connectio.
+define_basic_command!(REIN, rein);
+// Begins transmission of a file to the remote site.
+define_basic_command!(STOU, stou);
+// Returns a word identifying the system.
+define_basic_command!(SYST, syst);
