@@ -66,6 +66,7 @@ impl Client
             // User attempting to log in.
             USER(ref user) => {
                 if let ClientState::WaitingForLogin = self.state {
+                    self.state = ClientState::LoggedIn;
                     protocol::Reply::new(protocol::reply::code::USER_LOGGED_IN, "user logged in")
                 } else {
                     panic!("received USER message at incorrect time");

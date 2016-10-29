@@ -5,6 +5,8 @@ pub enum ClientState
     PendingWelcome,
     /// The client needs to login.
     WaitingForLogin,
+    /// The user has logged in.
+    LoggedIn,
 }
 
 impl Default for ClientState
