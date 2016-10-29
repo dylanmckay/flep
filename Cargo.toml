@@ -12,7 +12,16 @@ license = "MIT"
 
 keywords = ["ftp"]
 
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "server"
+path = "tools/server.rs"
+
 [workspace]
 
 [dependencies]
+mio = "0.6.0"
+uuid = { version = "0.3", features = ["v4"] }
 flep_protocol = { path = "src/protocol", version = "0.1.0" }

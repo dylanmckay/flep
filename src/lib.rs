@@ -1,8 +1,9 @@
 pub extern crate flep_protocol as protocol;
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-    }
-}
+extern crate mio;
+extern crate uuid;
+
+pub use self::connection::Connection;
+
+pub mod server;
+pub mod connection;
