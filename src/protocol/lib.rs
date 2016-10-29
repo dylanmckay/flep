@@ -6,7 +6,7 @@
 extern crate itertools;
 extern crate byteorder;
 
-pub use self::kind::{CommandKind, Command};
+pub use self::command_kind::{CommandKind, Command};
 pub use self::argument::Argument;
 pub use self::reply::Reply;
 pub use self::command::*;
@@ -43,7 +43,7 @@ macro_rules! define_command {
     };
 }
 
-pub mod kind;
+pub mod command_kind;
 pub mod argument;
 pub mod reply;
 pub mod command;
