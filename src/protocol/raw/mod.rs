@@ -1,8 +1,9 @@
 pub use self::port::PORT;
-pub use self::passive::PASV;
+pub use self::basic::PASV;
 
 pub mod port;
-pub mod passive;
+/// Commands which take no arguments.
+pub mod basic;
 
 use std::io::prelude::*;
 use std::{io, fmt};
