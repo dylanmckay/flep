@@ -27,6 +27,8 @@ pub enum CommandKind
     STOU(STOU),
     /// Returns a word identifying the system.
     SYST(SYST),
+    /// Sets the name for the user.
+    USER(USER),
 }
 
 impl CommandKind
@@ -63,6 +65,7 @@ impl CommandKind
             "REIN" => Ok(CommandKind::REIN(REIN::read_payload(&mut payload_reader)?)),
             "STOU" => Ok(CommandKind::STOU(STOU::read_payload(&mut payload_reader)?)),
             "SYST" => Ok(CommandKind::SYST(SYST::read_payload(&mut payload_reader)?)),
+            "USER" => Ok(CommandKind::USER(USER::read_payload(&mut payload_reader)?)),
             _ => panic!("unknown command: {}", command_name),
         };
 

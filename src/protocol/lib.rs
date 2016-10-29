@@ -22,6 +22,8 @@ macro_rules! define_command {
         impl $crate::Command for $name {
             fn write_payload(&self, write: &mut ::std::io::Write)
                 -> Result<(), ::std::io::Error> {
+                use $crate::Argument;
+
                 $( self.$arg_name.write(write)?; )*
                 Ok(())
             }
