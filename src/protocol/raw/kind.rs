@@ -7,23 +7,25 @@ use std::{io, fmt};
 pub enum CommandKind
 {
     PORT(PORT),
-    // Abort the current file transfer.
+    /// Abort the current file transfer.
     ABOR(ABOR),
-    // Change directory up one level.
+    /// Change directory up one level.
     CDUP(CDUP),
-    // A no-operation.
+    /// Set the transfer mode.
+    MODE(MODE),
+    /// A no-operation.
     NOOP(NOOP),
-    // Enable passive mode.
+    /// Enable passive mode.
     PASV(PASV),
-    // Gets the name of the current working directory on the remote host.
+    /// Gets the name of the current working directory on the remote host.
     PWD(PWD),
-    // Terminates the command connection.
+    /// Terminates the command connection.
     QUIT(QUIT),
-    // Reinitializes the command connectio.
+    /// Reinitializes the command connectio.
     REIN(REIN),
-    // Begins transmission of a file to the remote site.
+    /// Begins transmission of a file to the remote site.
     STOU(STOU),
-    // Returns a word identifying the system.
+    /// Returns a word identifying the system.
     SYST(SYST),
 }
 
@@ -47,13 +49,13 @@ impl CommandKind
             (line_string.as_str(), "")
         };
 
-
         let mut payload_reader = io::BufReader::new(io::Cursor::new(payload));
 
         let command = match command_name {
             "PORT" => Ok(CommandKind::PORT(PORT::read_payload(&mut payload_reader)?)),
             "ABOR" => Ok(CommandKind::ABOR(ABOR::read_payload(&mut payload_reader)?)),
             "CDUP" => Ok(CommandKind::CDUP(CDUP::read_payload(&mut payload_reader)?)),
+            "MODE" => Ok(CommandKind::MODE(MODE::read_payload(&mut payload_reader)?)),
             "NOOP" => Ok(CommandKind::NOOP(NOOP::read_payload(&mut payload_reader)?)),
             "PASV" => Ok(CommandKind::PASV(PASV::read_payload(&mut payload_reader)?)),
             "PWD" => Ok(CommandKind::PWD(PWD::read_payload(&mut payload_reader)?)),
@@ -98,10 +100,14 @@ pub trait Command : Clone + fmt::Debug + PartialEq + Eq
     /// Gets the name of the command.
     fn command_name(&self) -> &'static str;
 
-    /// Gets the raw bytes for a command.
     fn bytes(&self) -> Vec<u8> {
         let mut buffer = io::Cursor::new(Vec::new());
         self.write(&mut buffer).expect("IO failure while writing to memory buffer");
         buffer.into_inner()
+    }
+
+    /// Generates the text string for this packet.
+    fn to_string(&self) -> String {
+        String::from_utf8(self.bytes()).unwrap()
     }
 }

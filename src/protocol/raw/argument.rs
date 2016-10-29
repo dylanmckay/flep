@@ -10,13 +10,12 @@ pub trait Argument : Sized
 
 impl Argument for String
 {
-    fn read(read: &mut BufRead) -> Result<Self, io::Error> {
+    fn read(_read: &mut BufRead) -> Result<Self, io::Error> {
         unimplemented!();
     }
 
-    fn write(&self, write: &mut Write) -> Result<(), io::Error> {
+    fn write(&self, _write: &mut Write) -> Result<(), io::Error> {
         unimplemented!();
-        Ok(())
     }
 }
 
