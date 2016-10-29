@@ -60,7 +60,7 @@ impl Client
         match self.state {
             ClientState::PendingWelcome => {
                 println!("sending welcome");
-                let welcome = protocol::Reply::new(200, ftp.welcome_message());
+                let welcome = protocol::Reply::new(protocol::reply::code::OK, ftp.welcome_message());
                 welcome.write(&mut self.connection.pi.stream).unwrap();
 
                 Ok(())
