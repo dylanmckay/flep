@@ -1,6 +1,8 @@
+pub use self::ftp::{FileTransferProtocol, FileSystem};
 pub use self::client::Client;
 pub use self::client_state::ClientState;
 
+pub mod ftp;
 pub mod client;
 pub mod client_state;
 
@@ -13,7 +15,7 @@ use mio::tcp::TcpListener;
 // for which socket.
 const SERVER: Token = Token(0);
 
-pub fn run() {
+pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
     let mut token_accumulator: usize = 1;
 
     let addr = "127.0.0.1:2222".parse().unwrap();
@@ -41,7 +43,7 @@ pub fn run() {
                 SERVER => {
                     // Accept and drop the socket immediately, this will close
                     // the socket and notify the client of the EOF.
-                    let (mut sock, _) = server.accept().unwrap();
+                    let (sock, _) = server.accept().unwrap();
 
                     // Increase the token accumulator so the connection gets a unique token.
                     token_accumulator += 1;
@@ -53,7 +55,7 @@ pub fn run() {
                                   PollOpt::edge()).unwrap();
 
                     let mut client = Client::new(sock, token);
-                    client.progress().unwrap();
+                    client.progress(&mut ftp).unwrap();
 
                     clients.insert(client.uuid.clone(), client);
                 }

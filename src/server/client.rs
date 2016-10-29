@@ -1,6 +1,6 @@
 use Connection;
 use server::ClientState;
-use {protocol, connection};
+use {server, protocol, connection};
 
 use std::io::prelude::*;
 use std::io;
@@ -55,11 +55,12 @@ impl Client
     }
 
     /// Attempts to progress the state of the client if need be.
-    pub fn progress(&mut self) -> Result<(), io::Error> {
+    pub fn progress(&mut self, ftp: &mut server::FileTransferProtocol)
+        -> Result<(), io::Error> {
         match self.state {
             ClientState::PendingWelcome => {
                 println!("sending welcome");
-                let welcome = protocol::Reply::new(200, "Hello There");
+                let welcome = protocol::Reply::new(200, ftp.welcome_message());
                 welcome.write(&mut self.connection.pi.stream).unwrap();
 
                 Ok(())
