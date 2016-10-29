@@ -38,9 +38,9 @@ impl Client
             let bytes_written = self.connection.pi.stream.read(&mut buffer)?;
             let mut data = io::Cursor::new(&buffer[0..bytes_written]);
 
-            let message = protocol::CommandKind::read(&mut data)?;
-
-            println!("receiving data on PI stream: {:?}", message);
+            let command = protocol::CommandKind::read(&mut data)?;
+            let reply = self.handle_command(command);
+            reply.write(&mut self.connection.pi.stream)?;
         } else {
             let dtp = self.connection.dtp.as_mut().unwrap();
             assert_eq!(dtp.token, token);
@@ -52,6 +52,18 @@ impl Client
         }
 
         Ok(())
+    }
+
+    fn handle_command(&mut self, command: protocol::CommandKind) -> protocol::Reply {
+        use protocol::CommandKind::*;
+
+        match command {
+            USER(ref user) => {
+                unimplemented!();
+                protocol::Reply::new(protocol::reply::code::USER_LOGGED_IN, "user logged in")
+            },
+            c => panic!("don't know how to handle {:?}", c),
+        }
     }
 
     /// Attempts to progress the state of the client if need be.
