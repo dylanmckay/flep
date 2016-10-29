@@ -3,7 +3,16 @@ name = "flep"
 version = "0.1.0"
 authors = ["Dylan McKay <dylanmckay34@gmail.com>"]
 
+description = "File transfer protocol (FTP) library"
+documentation = "https://docs.rs/flep"
+repository = "https://github.com/dylanmckay/flep"
+
+readme = "README.md"
+license = "MIT"
+
+keywords = ["ftp"]
+
 [workspace]
 
 [dependencies]
-flep_protocol = { path = "src/protocol" }
+flep_protocol = { path = "src/protocol", version = "0.1.0" }
