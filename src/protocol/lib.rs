@@ -9,9 +9,7 @@ extern crate byteorder;
 pub use self::kind::{CommandKind, Command};
 pub use self::argument::Argument;
 pub use self::reply::Reply;
-pub use self::port::PORT;
-pub use self::mode::{MODE, Mode};
-pub use self::basic::{ABOR, CDUP, NOOP, PASV, PWD, QUIT, REIN, STOU, SYST};
+pub use self::command::*;
 
 /// Defines an new raw FTP command.
 macro_rules! define_command {
@@ -48,8 +46,5 @@ macro_rules! define_command {
 pub mod kind;
 pub mod argument;
 pub mod reply;
-pub mod port;
-pub mod mode;
-/// Commands which take no arguments.
-pub mod basic;
+pub mod command;
 
