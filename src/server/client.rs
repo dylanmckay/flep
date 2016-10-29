@@ -32,7 +32,7 @@ impl Client
         }
     }
 
-    pub fn receive_data(&mut self, token: mio::Token) -> Result<(), io::Error> {
+    pub fn receive_data(&mut self, token: mio::Token) -> Result<(), server::Error> {
         let mut buffer: [u8; 10000] = [0; 10000];
         if token == self.connection.pi.token {
             let bytes_written = self.connection.pi.stream.read(&mut buffer)?;
@@ -68,7 +68,7 @@ impl Client
 
     /// Attempts to progress the state of the client if need be.
     pub fn progress(&mut self, ftp: &mut server::FileTransferProtocol)
-        -> Result<(), io::Error> {
+        -> Result<(), server::Error> {
         match self.state {
             ClientState::PendingWelcome => {
                 println!("sending welcome");

@@ -1,7 +1,6 @@
-use Argument;
+use {Argument, Error};
 
 use std::io::prelude::*;
-use std::io;
 
 use byteorder::ReadBytesExt;
 
@@ -22,7 +21,7 @@ pub enum Mode
 
 impl Argument for Mode
 {
-    fn read(read: &mut BufRead) -> Result<Self, io::Error> {
+    fn read(read: &mut BufRead) -> Result<Self, Error> {
         let c = read.read_u8()? as char;
 
         match c {
@@ -33,7 +32,7 @@ impl Argument for Mode
         }
     }
 
-    fn write(&self, write: &mut Write) -> Result<(), io::Error> {
+    fn write(&self, write: &mut Write) -> Result<(), Error> {
         let mode_character = match *self {
             Mode::Stream => 'S',
             Mode::Block => 'B',

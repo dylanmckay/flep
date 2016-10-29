@@ -34,7 +34,7 @@ pub enum CommandKind
 impl CommandKind
 {
     /// Reads a command from a buffer.
-    pub fn read(read: &mut Read) -> Result<Self, io::Error> {
+    pub fn read(read: &mut Read) -> Result<Self, Error> {
         let line_bytes: Result<Vec<u8>, _> = read.bytes().take_while(|b| b.as_ref().map(|&b| (b as char) != '\n').unwrap_or(true)).collect();
         let mut line_bytes = line_bytes?;
 

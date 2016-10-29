@@ -1,10 +1,12 @@
 pub use self::ftp::{FileTransferProtocol, FileSystem};
 pub use self::client::Client;
 pub use self::client_state::ClientState;
+pub use self::error::Error;
 
 pub mod ftp;
 pub mod client;
 pub mod client_state;
+pub mod error;
 
 use std::collections::{HashMap, hash_map};
 
@@ -38,7 +40,7 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
     loop {
         poll.poll(&mut events, None).unwrap();
 
-        for event in events.iter() {
+        'events: for event in events.iter() {
             match event.token() {
                 SERVER => {
                     // Accept and drop the socket immediately, this will close
@@ -48,23 +50,34 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
                     // Increase the token accumulator so the connection gets a unique token.
                     token_accumulator += 1;
 
-                    println!("accepted connection");
-
                     let token = Token(token_accumulator);
                     poll.register(&sock, token, Ready::readable() | Ready::hup(),
                                   PollOpt::edge()).unwrap();
 
                     let mut client = Client::new(sock, token);
-                    client.progress(&mut ftp).unwrap();
 
-                    clients.insert(client.uuid.clone(), client);
+                    match client.progress(&mut ftp) {
+                        Ok(..) => {
+                            println!("a client has connected ({})", client.uuid);
+                            clients.insert(client.uuid.clone(), client);
+                        },
+                        Err(e) => {
+                            println!("error while progressing client: {:?}", e);
+                            drop(client);
+                        }
+                    }
+
                 }
                 token => {
                     let client_uuid = clients.values().find(|client| client.connection.has_token(token)).unwrap().uuid;
                     let mut client = if let hash_map::Entry::Occupied(entry) = clients.entry(client_uuid) { entry } else { unreachable!() };
 
                     if event.kind().is_readable() {
-                        client.get_mut().receive_data(token).unwrap();
+                        if let Err(e) = client.get_mut().receive_data(token) {
+                            println!("error while processing data from client ({}): {:?}", client.get().uuid, e);
+                            client.remove();
+                            continue 'events;
+                        }
                     }
 
                     if event.kind().is_hup() {

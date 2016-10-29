@@ -1,6 +1,5 @@
-use Command;
+use {Command, Error};
 use std::io::prelude::*;
-use std::io;
 
 use itertools::Itertools;
 use byteorder::{ByteOrder, NetworkEndian};
@@ -17,17 +16,18 @@ pub struct PORT
 
 impl Command for PORT
 {
-    fn write_payload(&self, write: &mut Write) -> Result<(), io::Error> {
+    fn write_payload(&self, write: &mut Write) -> Result<(), Error> {
         let mut port_buf = [0; 2];
         NetworkEndian::write_u16(&mut port_buf, self.port);
 
         let address_str = self.host_address.iter().map(|b| b.to_string()).join(",");
         let port_str = port_buf.iter().map(|b| b.to_string()).join(",");
 
-        write!(write, "{},{}", address_str, port_str)
+        write!(write, "{},{}", address_str, port_str)?;
+        Ok(())
     }
 
-    fn read_payload(read: &mut BufRead) -> Result<Self, io::Error> {
+    fn read_payload(read: &mut BufRead) -> Result<Self, Error> {
         let mut payload = String::new();
         read.read_to_string(&mut payload)?;
 

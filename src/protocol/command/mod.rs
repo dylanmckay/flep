@@ -11,6 +11,7 @@ pub mod mode;
 pub mod basic;
 pub mod misc;
 
+use Error;
 use std::io::prelude::*;
 use std::{io, fmt};
 
@@ -18,7 +19,7 @@ use std::{io, fmt};
 pub trait Command : Clone + fmt::Debug + PartialEq + Eq
 {
     /// Writes the command to a buffer.
-    fn write(&self, write: &mut Write) -> Result<(), io::Error> {
+    fn write(&self, write: &mut Write) -> Result<(), Error> {
         // Write the payload to a temporary space
         let mut payload_buffer = io::Cursor::new(Vec::new());
         self.write_payload(&mut payload_buffer)?;
@@ -36,10 +37,10 @@ pub trait Command : Clone + fmt::Debug + PartialEq + Eq
     }
 
     /// Writes the payload data.
-    fn write_payload(&self, write: &mut Write) -> Result<(), io::Error>;
+    fn write_payload(&self, write: &mut Write) -> Result<(), Error>;
 
     /// Reads payload data.
-    fn read_payload(read: &mut BufRead) -> Result<Self, io::Error>;
+    fn read_payload(read: &mut BufRead) -> Result<Self, Error>;
 
     /// Gets the name of the command.
     fn command_name(&self) -> &'static str;

@@ -6,15 +6,14 @@ macro_rules! define_basic_command {
         pub mod $module_name {
             use Command;
             use std::io::prelude::*;
-            use std::io;
 
             #[derive(Clone, Debug, PartialEq, Eq)]
             pub struct $name;
 
             impl Command for $name
             {
-                fn write_payload(&self, _: &mut Write) -> Result<(), io::Error> { Ok(()) }
-                fn read_payload(_: &mut BufRead) -> Result<Self, io::Error> { Ok($name) }
+                fn write_payload(&self, _: &mut Write) -> Result<(), $crate::Error> { Ok(()) }
+                fn read_payload(_: &mut BufRead) -> Result<Self, $crate::Error> { Ok($name) }
 
                 fn command_name(&self) -> &'static str { stringify!($name) }
             }

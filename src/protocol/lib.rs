@@ -10,9 +10,11 @@ pub use self::command_kind::CommandKind;
 pub use self::argument::Argument;
 pub use self::reply::Reply;
 pub use self::command::*;
+pub use self::error::Error;
 
 pub mod command_kind;
 pub mod argument;
 pub mod reply;
 pub mod command;
+pub mod error;
 

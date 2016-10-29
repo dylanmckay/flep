@@ -8,7 +8,7 @@ macro_rules! define_command {
 
         impl $crate::Command for $name {
             fn write_payload(&self, write: &mut ::std::io::Write)
-                -> Result<(), ::std::io::Error> {
+                -> Result<(), $crate::Error> {
                 use $crate::Argument;
 
                 $( self.$arg_name.write(write)?; )*
@@ -16,7 +16,7 @@ macro_rules! define_command {
             }
 
             fn read_payload(read: &mut ::std::io::BufRead)
-                -> Result<Self, ::std::io::Error> {
+                -> Result<Self, $crate::Error> {
                 Ok($name {
                     $( $arg_name : <$arg_ty as $crate::Argument>::read(read)?, )*
                 })
