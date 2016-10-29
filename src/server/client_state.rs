@@ -1,10 +1,11 @@
 /// The state of a client.
 pub enum ClientState
 {
-    AwaitingPort,
+    /// We need to send them a welcome message.
+    PendingWelcome,
 }
 
 impl Default for ClientState
 {
-    fn default() -> Self { ClientState::AwaitingPort }
+    fn default() -> Self { ClientState::PendingWelcome }
 }

@@ -1,6 +1,6 @@
 use Connection;
 use server::ClientState;
-use protocol;
+use {protocol, connection};
 
 use std::io::prelude::*;
 use std::io;
@@ -18,6 +18,20 @@ pub struct Client
 
 impl Client
 {
+    pub fn new(stream: mio::tcp::TcpStream, token: mio::Token) -> Self {
+        Client {
+            uuid: Uuid::new_v4(),
+            state: Default::default(),
+            connection: Connection {
+                pi: connection::Interpreter {
+                    stream: stream,
+                    token: token,
+                },
+                dtp: None,
+            },
+        }
+    }
+
     pub fn receive_data(&mut self, token: mio::Token) -> Result<(), io::Error> {
         let mut buffer: [u8; 10000] = [0; 10000];
         if token == self.connection.pi.token {
@@ -38,5 +52,18 @@ impl Client
         }
 
         Ok(())
+    }
+
+    /// Attempts to progress the state of the client if need be.
+    pub fn progress(&mut self) -> Result<(), io::Error> {
+        match self.state {
+            ClientState::PendingWelcome => {
+                println!("sending welcome");
+                let welcome = protocol::Reply::new(200, "Hello There");
+                welcome.write(&mut self.connection.pi.stream).unwrap();
+
+                Ok(())
+            },
+        }
     }
 }

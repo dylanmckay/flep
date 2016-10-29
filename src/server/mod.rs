@@ -4,15 +4,10 @@ pub use self::client_state::ClientState;
 pub mod client;
 pub mod client_state;
 
-use Connection;
-use connection;
-
 use std::collections::{HashMap, hash_map};
 
 use mio::*;
 use mio::tcp::TcpListener;
-
-use uuid::Uuid;
 
 // Setup some tokens to allow us to identify which event is
 // for which socket.
@@ -57,22 +52,10 @@ pub fn run() {
                     poll.register(&sock, token, Ready::readable() | Ready::hup(),
                                   PollOpt::edge()).unwrap();
 
-                    let uuid = Uuid::new_v4();
+                    let mut client = Client::new(sock, token);
+                    client.progress().unwrap();
 
-                    let welcome = ::protocol::Reply::new(200, "Hello There");
-                    welcome.write(&mut sock).unwrap();
-
-                    clients.insert(uuid, Client {
-                        uuid: uuid,
-                        state: Default::default(),
-                        connection: Connection {
-                            pi: connection::Interpreter {
-                                stream: sock,
-                                token: token,
-                            },
-                            dtp: None,
-                        },
-                    });
+                    clients.insert(client.uuid.clone(), client);
                 }
                 token => {
                     let client_uuid = clients.values().find(|client| client.connection.has_token(token)).unwrap().uuid;
