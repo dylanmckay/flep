@@ -36,7 +36,11 @@ impl CommandKind
     /// Reads a command from a buffer.
     pub fn read(read: &mut Read) -> Result<Self, io::Error> {
         let line_bytes: Result<Vec<u8>, _> = read.bytes().take_while(|b| b.as_ref().map(|&b| (b as char) != '\n').unwrap_or(true)).collect();
-        let line_bytes = line_bytes?;
+        let mut line_bytes = line_bytes?;
+
+        // Every new line should use '\r\n', and we trimmed the '\n' above.
+        assert_eq!(line_bytes.last(), Some(&('\r' as u8)));
+        line_bytes.pop();
 
         let line_string = String::from_utf8(line_bytes).unwrap();
 
