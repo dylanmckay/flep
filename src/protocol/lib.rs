@@ -3,6 +3,8 @@
 //! * [RFC 959](https://www.w3.org/Protocols/rfc959)
 //! * http://www.nsftools.com/tips/RawFTP.htm
 
+pub extern crate rfc1700;
+
 extern crate itertools;
 extern crate byteorder;
 

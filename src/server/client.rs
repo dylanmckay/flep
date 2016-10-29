@@ -4,6 +4,7 @@ use {server, protocol, connection};
 
 use std::io::prelude::*;
 use std::io;
+use std;
 
 use mio;
 use uuid::Uuid;
@@ -32,14 +33,16 @@ impl Client
         }
     }
 
-    pub fn receive_data(&mut self, token: mio::Token) -> Result<(), server::Error> {
+    pub fn handle_data(&mut self, token: mio::Token, ftp: &mut server::FileTransferProtocol)
+        -> Result<(), server::Error> {
         let mut buffer: [u8; 10000] = [0; 10000];
         if token == self.connection.pi.token {
             let bytes_written = self.connection.pi.stream.read(&mut buffer)?;
             let mut data = io::Cursor::new(&buffer[0..bytes_written]);
 
             let command = protocol::CommandKind::read(&mut data)?;
-            let reply = self.handle_command(command);
+            let reply = self.handle_command(command, ftp);
+
             reply.write(&mut self.connection.pi.stream)?;
         } else {
             let dtp = self.connection.dtp.as_mut().unwrap();
@@ -54,13 +57,23 @@ impl Client
         Ok(())
     }
 
-    fn handle_command(&mut self, command: protocol::CommandKind) -> protocol::Reply {
+    fn handle_command(&mut self,
+                      command: protocol::CommandKind,
+                      ftp: &mut server::FileTransferProtocol) -> protocol::Reply {
         use protocol::CommandKind::*;
 
         match command {
+            // User attempting to log in.
             USER(ref user) => {
-                unimplemented!();
-                protocol::Reply::new(protocol::reply::code::USER_LOGGED_IN, "user logged in")
+                if let ClientState::WaitingForLogin = self.state {
+                    protocol::Reply::new(protocol::reply::code::USER_LOGGED_IN, "user logged in")
+                } else {
+                    panic!("received USER message at incorrect time");
+                }
+            },
+            // Client requesting information about the server system.
+            SYST(ref syst) => {
+                protocol::Reply::new(protocol::reply::code::SYSTEM_NAME_TYPE, protocol::rfc1700::system::UNIX)
             },
             c => panic!("don't know how to handle {:?}", c),
         }
@@ -69,14 +82,19 @@ impl Client
     /// Attempts to progress the state of the client if need be.
     pub fn progress(&mut self, ftp: &mut server::FileTransferProtocol)
         -> Result<(), server::Error> {
-        match self.state {
+        let state = std::mem::replace(&mut self.state, ClientState::WaitingForLogin);
+
+        self.state = match state {
             ClientState::PendingWelcome => {
                 println!("sending welcome");
                 let welcome = protocol::Reply::new(protocol::reply::code::OK, ftp.welcome_message());
                 welcome.write(&mut self.connection.pi.stream).unwrap();
 
-                Ok(())
+                ClientState::WaitingForLogin
             },
-        }
+            state => state,
+        };
+
+        Ok(())
     }
 }

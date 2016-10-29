@@ -15,5 +15,6 @@ keywords = ["ftp"]
 path = "lib.rs"
 
 [dependencies]
+rfc1700 = "0.1"
 itertools = "0.5"
 byteorder = "0.5"
