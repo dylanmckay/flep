@@ -46,7 +46,7 @@ pub fn run() {
                 SERVER => {
                     // Accept and drop the socket immediately, this will close
                     // the socket and notify the client of the EOF.
-                    let (sock, _) = server.accept().unwrap();
+                    let (mut sock, _) = server.accept().unwrap();
 
                     // Increase the token accumulator so the connection gets a unique token.
                     token_accumulator += 1;
@@ -58,6 +58,9 @@ pub fn run() {
                                   PollOpt::edge()).unwrap();
 
                     let uuid = Uuid::new_v4();
+
+                    use std::io::Write;
+                    sock.write(format!("200 Hello There\r\n").as_bytes()).unwrap();
 
                     clients.insert(uuid, Client {
                         uuid: uuid,
@@ -73,10 +76,10 @@ pub fn run() {
                 }
                 token => {
                     let client_uuid = clients.values().find(|client| client.connection.has_token(token)).unwrap().uuid;
-                    let client = if let hash_map::Entry::Occupied(entry) = clients.entry(client_uuid) { entry } else { unreachable!() };
+                    let mut client = if let hash_map::Entry::Occupied(entry) = clients.entry(client_uuid) { entry } else { unreachable!() };
 
                     if event.kind().is_readable() {
-                        println!("received data: {:?}", token);
+                        client.get_mut().receive_data(token).unwrap();
                     }
 
                     if event.kind().is_hup() {
