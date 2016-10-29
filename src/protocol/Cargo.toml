@@ -7,3 +7,5 @@ authors = ["Dylan McKay <dylanmckay34@gmail.com>"]
 path = "lib.rs"
 
 [dependencies]
+itertools = "0.5"
+byteorder = "0.5"
