@@ -1,6 +1,8 @@
 pub use self::client::Client;
+pub use self::client_state::ClientState;
 
 pub mod client;
+pub mod client_state;
 
 use Connection;
 use connection;
@@ -59,6 +61,7 @@ pub fn run() {
 
                     clients.insert(uuid, Client {
                         uuid: uuid,
+                        state: Default::default(),
                         connection: Connection {
                             pi: connection::Interpreter {
                                 stream: sock,

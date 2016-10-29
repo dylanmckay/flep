@@ -1,4 +1,5 @@
 use Connection;
+use server::ClientState;
 
 use uuid::Uuid;
 
@@ -6,5 +7,6 @@ use uuid::Uuid;
 pub struct Client
 {
     pub uuid: Uuid,
+    pub state: ClientState,
     pub connection: Connection,
 }
