@@ -13,23 +13,27 @@ use std::collections::{HashMap, hash_map};
 use mio::*;
 use mio::tcp::TcpListener;
 
-// Setup some tokens to allow us to identify which event is
-// for which socket.
-const SERVER: Token = Token(0);
+const PROTOCOL_SERVER: Token = Token(0);
+const DATA_SERVER: Token = Token(1);
 
 pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
-    let mut token_accumulator: usize = 1;
+    let mut token_accumulator: usize = 100;
 
-    let addr = "127.0.0.1:2222".parse().unwrap();
+    let protocol_addr = "127.0.0.1:2222".parse().unwrap();
+    let data_addr = "127.0.0.1:2223".parse().unwrap();
 
     // Setup the server socket
-    let server = TcpListener::bind(&addr).unwrap();
+    let protocol_server = TcpListener::bind(&protocol_addr).unwrap();
+    let data_server = TcpListener::bind(&data_addr).unwrap();
 
     // Create an poll instance
     let poll = Poll::new().unwrap();
 
     // Start listening for incoming connections
-    poll.register(&server, SERVER, Ready::readable(),
+    poll.register(&protocol_server, PROTOCOL_SERVER, Ready::readable(),
+                  PollOpt::edge()).unwrap();
+
+    poll.register(&data_server, DATA_SERVER, Ready::readable(),
                   PollOpt::edge()).unwrap();
 
     // Create storage for events
@@ -42,10 +46,10 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
 
         'events: for event in events.iter() {
             match event.token() {
-                SERVER => {
+                PROTOCOL_SERVER => {
                     // Accept and drop the socket immediately, this will close
                     // the socket and notify the client of the EOF.
-                    let (sock, _) = server.accept().unwrap();
+                    let (sock, _) = protocol_server.accept().unwrap();
 
                     // Increase the token accumulator so the connection gets a unique token.
                     token_accumulator += 1;
@@ -67,7 +71,10 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
                         }
                     }
 
-                }
+                },
+                DATA_SERVER => {
+                    panic!("received conn on the data server");
+                },
                 token => {
                     let client_uuid = clients.values().find(|client| client.connection.has_token(token)).unwrap().uuid;
                     let mut client = if let hash_map::Entry::Occupied(entry) = clients.entry(client_uuid) { entry } else { unreachable!() };

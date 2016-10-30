@@ -137,6 +137,8 @@ impl Client
                 }
             },
             PORT(ref port) => {
+                println!("set port to {}", port.port);
+
                 if let Session::Ready(ref mut session) = self.session {
                     session.port = Some(port.port);
                     protocol::Reply::new(protocol::reply::code::OK, "port")
