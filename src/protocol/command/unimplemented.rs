@@ -46,7 +46,6 @@ define_unimplemented_command!(MLSD);
 define_unimplemented_command!(MLST);
 define_unimplemented_command!(NLST);
 define_unimplemented_command!(OPTS);
-define_unimplemented_command!(PASS);
 define_unimplemented_command!(PBSZ);
 define_unimplemented_command!(PROT);
 define_unimplemented_command!(REST);

@@ -7,7 +7,9 @@ pub trait FileTransferProtocol : FileSystem
     fn welcome_message(&self) -> String;
 
     /// Attempts to authenticate a user.
-    fn authenticate_user(&self, _credentials: &Credentials) -> bool { true }
+    fn authenticate_user(&self, credentials: &Credentials) -> bool {
+        credentials.username == "foo" && credentials.password == Some("bar".to_owned())
+    }
 }
 
 /// A filesystem mountable as FTP.

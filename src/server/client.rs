@@ -1,4 +1,4 @@
-use Connection;
+use {Connection, Credentials};
 use server::{Session, session};
 use {server, protocol, connection};
 
@@ -59,18 +59,48 @@ impl Client
 
     fn handle_command(&mut self,
                       command: protocol::CommandKind,
-                      _ftp: &mut server::FileTransferProtocol) -> protocol::Reply {
+                      ftp: &mut server::FileTransferProtocol) -> protocol::Reply {
         use protocol::CommandKind::*;
+
+        println!("received {:?}", command);
 
         match command {
             // User attempting to log in.
-            USER(ref _user) => {
-                if let Session::Pending(session::Pending::WaitingForLogin) = self.state {
-                    // FIXME: we should be waiting for password and the authenticate
-                    self.state = Session::Ready(session::Ready { });
-                    protocol::Reply::new(protocol::reply::code::USER_LOGGED_IN, "user logged in")
+            USER(ref user) => {
+                if let Session::Pending(session::Pending::WaitingForUsername) = self.state {
+                    let credentials = Credentials { username: user.username.to_owned(), password: None };
+
+                    // The user may authenticate with no password
+                    if ftp.authenticate_user(&credentials) {
+                        self.state = Session::Ready(session::Ready { });
+
+                        protocol::Reply::new(protocol::reply::code::USER_LOGGED_IN, "user logged in")
+                    } else {
+                        // The user needs a password to get through.
+                        self.state = Session::Pending(session::Pending::WaitingForPassword {
+                            username: user.username.to_owned(),
+                        });
+
+                        protocol::Reply::new(protocol::reply::code::USER_NAME_OKAY_NEED_PASSWORD, "need password")
+                    }
                 } else {
-                    panic!("received USER message at incorrect time");
+                    // We can only handle USER commands during initialisation as of current
+                    unimplemented!();
+                }
+            },
+            PASS(ref pass) => {
+                if let Session::Pending(session::Pending::WaitingForPassword { username }) = self.state.clone() {
+                    let credentials = Credentials { username: username.to_owned(), password: Some(pass.password.to_owned()) };
+
+                    if ftp.authenticate_user(&credentials) {
+                        self.state = Session::Ready(session::Ready { });
+
+                        protocol::Reply::new(protocol::reply::code::USER_LOGGED_IN, "user logged in")
+                    } else {
+                        protocol::Reply::new(protocol::reply::code::USER_NOT_LOGGED_IN, "invalid credentials")
+                    }
+                } else {
+                    panic!("username must be sent before password");
                 }
             },
             // Client requesting information about the server system.
@@ -95,7 +125,7 @@ impl Client
                 let welcome = protocol::Reply::new(protocol::reply::code::OK, ftp.welcome_message());
                 welcome.write(&mut self.connection.pi.stream).unwrap();
 
-                Session::Pending(session::Pending::WaitingForLogin)
+                Session::Pending(session::Pending::WaitingForUsername)
             },
             state => state,
         };
