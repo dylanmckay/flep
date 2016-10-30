@@ -2,6 +2,7 @@ pub use self::port::PORT;
 pub use self::mode::{MODE, Mode};
 pub use self::basic::{ABOR, CDUP, NOOP, PASV, PWD, QUIT, REIN, STOU, SYST};
 pub use self::misc::USER;
+pub use self::unimplemented::*;
 
 #[macro_use]
 pub mod macros;
@@ -10,6 +11,7 @@ pub mod mode;
 /// Commands which take no arguments.
 pub mod basic;
 pub mod misc;
+pub mod unimplemented;
 
 use Error;
 use std::io::prelude::*;

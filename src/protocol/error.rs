@@ -3,6 +3,8 @@ use std::{io, string};
 #[derive(Debug)]
 pub enum Error
 {
+    /// The client sent an invalid command.
+    InvalidCommand { name: String },
     Io(io::Error),
     FromUtf8(string::FromUtf8Error),
 }

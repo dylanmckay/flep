@@ -6,29 +6,129 @@ use std::io;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum CommandKind
 {
-    PORT(PORT),
-    /// Abort the current file transfer.
+    /// Abort an active file transfer.
     ABOR(ABOR),
+    /// Account information.
+    ACCT(ACCT),
+    /// Authentication/Security Data.
+    ADAT(ADAT),
+    /// Allocate sufficient disk space to receive a file.
+    ALLO(ALLO),
+    /// Append.
+    APPE(APPE),
+    /// Authentication/Security Mechanism.
+    AUTH(AUTH),
+    /// Clear Command Channel.
+    CCC(CCC),
     /// Change directory up one level.
     CDUP(CDUP),
-    /// Set the transfer mode.
+    /// Confidentiality Protection Command.
+    CONF(CONF),
+    /// Change working directory.
+    CWD(CWD),
+    /// Delete file.
+    DELE(DELE),
+    /// Privacy Protected Channel.
+    ENC(ENC),
+    /// Specifies an extended address and port to which the server should connect.
+    EPRT(EPRT),
+    /// Enter extended passive mode.
+    EPSV(EPSV),
+    /// Get the feature list implemented by the server.
+    FEAT(FEAT),
+    /// Returns usage documentation on a command if specified, else a
+    /// general help document is returned.
+    HELP(HELP),
+    /// Identify desired virtual host on server, by name.
+    HOST(HOST),
+    /// Language Negotiation.
+    LANG(LANG),
+    /// Returns information of a file or directory if specified, else
+    /// information of the current working directory is returned.
+    LIST(LIST),
+    /// Specifies a long address and port to which the server should connect.
+    LPRT(LPRT),
+    /// Enter long passive mode.
+    LPSV(LPSV),
+    /// Return the last-modified time of a specified file.
+    MDTM(MDTM),
+    /// Integrity Protected Command.
+    MIC(MIC),
+    /// Make directory.
+    MKD(MKD),
+    /// Lists the contents of a directory if a directory is named.
+    MLSD(MLSD),
+    /// Provides data about exactly the object named on its command line,
+    /// and no others.
+    MLST(MLST),
+    /// Sets the transfer mode.
     MODE(MODE),
+    /// Returns a list of file names in a specified directory.
+    NLST(NLST),
     /// A no-operation.
     NOOP(NOOP),
-    /// Enable passive mode.
+    /// Select options for a feature.
+    OPTS(OPTS),
+    /// Authentication password.
+    PASS(PASS),
+    /// Enter passive mode.
     PASV(PASV),
+    /// Protection Buffer Size.
+    PBSZ(PBSZ),
+    /// Specifies an address and port to which the server should connect.
+    PORT(PORT),
+    /// Data Channel Protection Level.
+    PROT(PROT),
     /// Gets the name of the current working directory on the remote host.
     PWD(PWD),
     /// Terminates the command connection.
     QUIT(QUIT),
-    /// Reinitializes the command connectio.
+    /// Reinitializes the command connection.
     REIN(REIN),
-    /// Begins transmission of a file to the remote site.
+    /// Restart transfer from the specified point.
+    REST(REST),
+    /// Retrieve a copy of the file.
+    RETR(RETR),
+    /// Remove a directory.
+    RMD(RMD),
+    /// Rename from.
+    RNFR(RNFR),
+    /// Rename to.
+    RNTO(RNTO),
+    /// Sends site specific commands to remote server.
+    SITE(SITE),
+    /// Return the size of a file.
+    SIZE(SIZE),
+    /// Mount file structure.
+    SMNT(SMNT),
+    /// Returns the current status.
+    STAT(STAT),
+    /// Accept the data and to store the data as a file at the server site.
+    STOR(STOR),
+    /// Store file uniquely.
     STOU(STOU),
+    /// Set file transfer structure.
+    STRU(STRU),
     /// Returns a word identifying the system.
     SYST(SYST),
+    /// Sets the transfer mode (ASCII/binary).
+    TYPE(TYPE),
     /// Sets the name for the user.
     USER(USER),
+    /// Change to the parent of the current working directory.
+    XCUP(XCUP),
+    /// Make a directory.
+    XMKD(XMKD),
+    /// Print the current working directory.
+    XPWD(XPWD),
+    XRCP(XRCP),
+    /// Remove the directory.
+    XRMD(XRMD),
+    XRSQ(XRSQ),
+    /// Send, mail if cannot.
+    XSEM(XSEM),
+    /// Send to terminal.
+    XSEN(XSEN),
 }
 
 impl CommandKind
@@ -57,22 +157,22 @@ impl CommandKind
 
         let mut payload_reader = io::BufReader::new(io::Cursor::new(payload));
 
-        let command = match command_name {
-            "PORT" => Ok(CommandKind::PORT(PORT::read_payload(&mut payload_reader)?)),
-            "ABOR" => Ok(CommandKind::ABOR(ABOR::read_payload(&mut payload_reader)?)),
-            "CDUP" => Ok(CommandKind::CDUP(CDUP::read_payload(&mut payload_reader)?)),
-            "MODE" => Ok(CommandKind::MODE(MODE::read_payload(&mut payload_reader)?)),
-            "NOOP" => Ok(CommandKind::NOOP(NOOP::read_payload(&mut payload_reader)?)),
-            "PASV" => Ok(CommandKind::PASV(PASV::read_payload(&mut payload_reader)?)),
-            "PWD" => Ok(CommandKind::PWD(PWD::read_payload(&mut payload_reader)?)),
-            "QUIT" => Ok(CommandKind::QUIT(QUIT::read_payload(&mut payload_reader)?)),
-            "REIN" => Ok(CommandKind::REIN(REIN::read_payload(&mut payload_reader)?)),
-            "STOU" => Ok(CommandKind::STOU(STOU::read_payload(&mut payload_reader)?)),
-            "SYST" => Ok(CommandKind::SYST(SYST::read_payload(&mut payload_reader)?)),
-            "USER" => Ok(CommandKind::USER(USER::read_payload(&mut payload_reader)?)),
-            _ => panic!("unknown command: {}", command_name),
-        };
+        macro_rules! read_commands {
+            ( $cmd_name:ident => $( $name:ident ),+ ) => {
+                match command_name {
+                    $( stringify!($name) => Ok(CommandKind::$name($name::read_payload(&mut payload_reader)?)), )+
+                    _ => Err(Error::InvalidCommand { name: command_name.to_owned() }),
+                }
+            }
+        }
 
-        command
+        read_commands!(command_name =>
+            ABOR, ACCT, ADAT, ALLO, APPE, AUTH, CCC, CDUP, CONF, CWD, DELE, ENC,
+            EPRT, EPSV, FEAT, HELP, HOST, LANG, LIST, LPRT, LPSV, MDTM, MIC, MKD,
+            MLSD, MLST, MODE, NLST, NOOP, OPTS, PASS, PASV, PBSZ, PORT, PROT, PWD,
+            QUIT, REIN, REST, RETR, RMD, RNFR, RNTO, SITE, SIZE, SMNT, STAT, STOR,
+            STOU, STRU, SYST, TYPE, USER, XCUP, XMKD, XPWD, XRCP, XRMD, XRSQ, XSEM,
+            XSEN
+        )
     }
 }
