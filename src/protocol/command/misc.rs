@@ -22,12 +22,24 @@ define_command!(DELE {
     remote_filename: String,
 });
 
+define_command!(HELP {
+    command: Option<String>,
+});
+
+define_command!(LIST {
+    remote_filespec: Option<String>,
+});
+
 define_command!(MDTM {
     remote_filename: String,
 });
 
 define_command!(MKD {
     remote_filename: String,
+});
+
+define_command!(NLST {
+    remote_directory: Option<String>,
 });
 
 define_command!(RETR {
@@ -52,6 +64,10 @@ define_command!(SITE {
 
 define_command!(SIZE {
     remote_filename: String,
+});
+
+define_command!(STAT {
+    remote_filespec: Option<String>,
 });
 
 define_command!(STOR {
