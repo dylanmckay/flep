@@ -1,11 +1,11 @@
 pub use self::ftp::{FileTransferProtocol, FileSystem};
 pub use self::client::Client;
-pub use self::client_state::ClientState;
+pub use self::session::Session;
 pub use self::error::Error;
 
 pub mod ftp;
 pub mod client;
-pub mod client_state;
+pub mod session;
 pub mod error;
 
 use std::collections::{HashMap, hash_map};

@@ -1,5 +1,5 @@
 use Connection;
-use server::ClientState;
+use server::{Session, session};
 use {server, protocol, connection};
 
 use std::io::prelude::*;
@@ -13,7 +13,7 @@ use uuid::Uuid;
 pub struct Client
 {
     pub uuid: Uuid,
-    pub state: ClientState,
+    pub state: Session,
     pub connection: Connection,
 }
 
@@ -59,14 +59,15 @@ impl Client
 
     fn handle_command(&mut self,
                       command: protocol::CommandKind,
-                      ftp: &mut server::FileTransferProtocol) -> protocol::Reply {
+                      _ftp: &mut server::FileTransferProtocol) -> protocol::Reply {
         use protocol::CommandKind::*;
 
         match command {
             // User attempting to log in.
-            USER(ref user) => {
-                if let ClientState::WaitingForLogin = self.state {
-                    self.state = ClientState::LoggedIn;
+            USER(ref _user) => {
+                if let Session::Pending(session::Pending::WaitingForLogin) = self.state {
+                    // FIXME: we should be waiting for password and the authenticate
+                    self.state = Session::Ready(session::Ready { });
                     protocol::Reply::new(protocol::reply::code::USER_LOGGED_IN, "user logged in")
                 } else {
                     panic!("received USER message at incorrect time");
@@ -86,15 +87,15 @@ impl Client
     /// Attempts to progress the state of the client if need be.
     pub fn progress(&mut self, ftp: &mut server::FileTransferProtocol)
         -> Result<(), server::Error> {
-        let state = std::mem::replace(&mut self.state, ClientState::WaitingForLogin);
+        let state = std::mem::replace(&mut self.state, Session::default());
 
         self.state = match state {
-            ClientState::PendingWelcome => {
+            Session::Pending(session::Pending::PendingWelcome) => {
                 println!("sending welcome");
                 let welcome = protocol::Reply::new(protocol::reply::code::OK, ftp.welcome_message());
                 welcome.write(&mut self.connection.pi.stream).unwrap();
 
-                ClientState::WaitingForLogin
+                Session::Pending(session::Pending::WaitingForLogin)
             },
             state => state,
         };
