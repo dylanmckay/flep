@@ -21,14 +21,11 @@ macro_rules! define_unimplemented_command
     }
 }
 
-define_unimplemented_command!(ACCT);
 define_unimplemented_command!(ADAT);
 define_unimplemented_command!(ALLO);
-define_unimplemented_command!(APPE);
 define_unimplemented_command!(AUTH);
 define_unimplemented_command!(CCC);
 define_unimplemented_command!(CONF);
-define_unimplemented_command!(DELE);
 define_unimplemented_command!(ENC);
 define_unimplemented_command!(EPRT);
 define_unimplemented_command!(EPSV);
@@ -38,9 +35,7 @@ define_unimplemented_command!(LANG);
 define_unimplemented_command!(LIST);
 define_unimplemented_command!(LPRT);
 define_unimplemented_command!(LPSV);
-define_unimplemented_command!(MDTM);
 define_unimplemented_command!(MIC);
-define_unimplemented_command!(MKD);
 define_unimplemented_command!(MLSD);
 define_unimplemented_command!(MLST);
 define_unimplemented_command!(NLST);
@@ -48,15 +43,8 @@ define_unimplemented_command!(OPTS);
 define_unimplemented_command!(PBSZ);
 define_unimplemented_command!(PROT);
 define_unimplemented_command!(REST);
-define_unimplemented_command!(RETR);
-define_unimplemented_command!(RMD);
-define_unimplemented_command!(RNFR);
-define_unimplemented_command!(RNTO);
-define_unimplemented_command!(SITE);
-define_unimplemented_command!(SIZE);
 define_unimplemented_command!(SMNT);
 define_unimplemented_command!(STAT);
-define_unimplemented_command!(STOR);
 define_unimplemented_command!(STRU);
 define_unimplemented_command!(TYPE);
 define_unimplemented_command!(XCUP);
