@@ -13,7 +13,7 @@ use uuid::Uuid;
 pub struct Client
 {
     pub uuid: Uuid,
-    pub state: Session,
+    pub session: Session,
     pub connection: Connection,
 }
 
@@ -22,7 +22,7 @@ impl Client
     pub fn new(stream: mio::tcp::TcpStream, token: mio::Token) -> Self {
         Client {
             uuid: Uuid::new_v4(),
-            state: Default::default(),
+            session: Default::default(),
             connection: Connection {
                 pi: connection::Interpreter {
                     stream: stream,
@@ -67,16 +67,16 @@ impl Client
         match command {
             // User attempting to log in.
             USER(ref user) => {
-                if let Session::Pending(session::Pending::WaitingForUsername) = self.state {
+                if let Session::Pending(session::Pending::WaitingForUsername) = self.session {
                     let credentials = Credentials { username: user.username.to_owned(), password: None };
 
                     // The user may authenticate with no password
                     if ftp.authenticate_user(&credentials) {
-                        self.state = Session::Ready(session::Ready::new(credentials));
+                        self.session = Session::Ready(session::Ready::new(credentials));
                         protocol::Reply::new(protocol::reply::code::USER_LOGGED_IN, "user logged in")
                     } else {
                         // The user needs a password to get through.
-                        self.state = Session::Pending(session::Pending::WaitingForPassword {
+                        self.session = Session::Pending(session::Pending::WaitingForPassword {
                             username: user.username.to_owned(),
                         });
 
@@ -88,11 +88,11 @@ impl Client
                 }
             },
             PASS(ref pass) => {
-                if let Session::Pending(session::Pending::WaitingForPassword { username }) = self.state.clone() {
+                if let Session::Pending(session::Pending::WaitingForPassword { username }) = self.session.clone() {
                     let credentials = Credentials { username: username.to_owned(), password: Some(pass.password.to_owned()) };
 
                     if ftp.authenticate_user(&credentials) {
-                        self.state = Session::Ready(session::Ready::new(credentials));
+                        self.session = Session::Ready(session::Ready::new(credentials));
                         protocol::Reply::new(protocol::reply::code::USER_LOGGED_IN, "user logged in")
                     } else {
                         protocol::Reply::new(protocol::reply::code::USER_NOT_LOGGED_IN, "invalid credentials")
@@ -102,7 +102,7 @@ impl Client
                 }
             },
             PWD(..) => {
-                if let Session::Ready(ref session) = self.state {
+                if let Session::Ready(ref session) = self.session {
                     protocol::Reply::new(protocol::reply::code::PATHNAME_CREATED,
                                          session.working_dir.clone().into_os_string().into_string().unwrap())
                 } else {
@@ -123,9 +123,9 @@ impl Client
     /// Attempts to progress the state of the client if need be.
     pub fn progress(&mut self, ftp: &mut server::FileTransferProtocol)
         -> Result<(), server::Error> {
-        let state = std::mem::replace(&mut self.state, Session::default());
+        let session = std::mem::replace(&mut self.session, Session::default());
 
-        self.state = match state {
+        self.session = match session {
             Session::Pending(session::Pending::PendingWelcome) => {
                 println!("sending welcome");
                 let welcome = protocol::Reply::new(protocol::reply::code::OK, ftp.welcome_message());
@@ -133,7 +133,7 @@ impl Client
 
                 Session::Pending(session::Pending::WaitingForUsername)
             },
-            state => state,
+            session => session,
         };
 
         Ok(())
