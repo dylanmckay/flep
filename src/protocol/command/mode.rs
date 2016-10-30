@@ -81,17 +81,17 @@ mod test
 
     #[test]
     fn correctly_reads_stream_modeset() {
-        assert_eq!(read("MODE S"), MODE { mode: Mode::Stream });
+        assert_eq!(read("MODE S\r\n"), MODE { mode: Mode::Stream });
     }
 
     #[test]
     fn correctly_reads_block_modeset() {
-        assert_eq!(read("MODE B"), MODE { mode: Mode::Block });
+        assert_eq!(read("MODE B\r\n"), MODE { mode: Mode::Block });
     }
 
     #[test]
     fn correctly_reads_compressed_modeset() {
-        assert_eq!(read("MODE C"), MODE { mode: Mode::Compressed });
+        assert_eq!(read("MODE C\r\n"), MODE { mode: Mode::Compressed });
     }
 }
 

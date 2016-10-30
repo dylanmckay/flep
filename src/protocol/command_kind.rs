@@ -139,7 +139,7 @@ impl CommandKind
         let mut line_bytes = line_bytes?;
 
         // Every new line should use '\r\n', and we trimmed the '\n' above.
-        assert_eq!(line_bytes.last(), Some(&('\r' as u8)));
+        assert_eq!(line_bytes.last(), Some(&('\r' as u8)), "new lines should be CR+LF, not just LF");
         line_bytes.pop();
 
         let line_string = String::from_utf8(line_bytes).unwrap();

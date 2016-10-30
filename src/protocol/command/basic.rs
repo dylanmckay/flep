@@ -36,8 +36,8 @@ macro_rules! define_basic_command {
 
                 #[test]
                 fn correctly_reads_basic_packets() {
-                    let raw_bytes = stringify!($name).as_bytes();
-                    let command = CommandKind::read(&mut io::Cursor::new(raw_bytes.to_vec())).unwrap();
+                    let raw_text = format!("{}\r\n", stringify!($name));
+                    let command = CommandKind::read(&mut io::Cursor::new(raw_text.as_bytes().to_vec())).unwrap();
 
                     assert_eq!(command, CommandKind::$name($name));
                 }

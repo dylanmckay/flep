@@ -62,7 +62,7 @@ mod test
 
     #[test]
     fn correctly_reads_basic_packets() {
-        let raw_bytes = "PORT 192,168,1,1,255,255".as_bytes();
+        let raw_bytes = "PORT 192,168,1,1,255,255\r\n".as_bytes();
         let command = CommandKind::read(&mut io::Cursor::new(raw_bytes.to_vec())).unwrap();
 
         assert_eq!(command, CommandKind::PORT(PORT { host_address: [192,168,1,1], port: 65535 }));
