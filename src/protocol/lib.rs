@@ -13,6 +13,7 @@ pub use self::argument::Argument;
 pub use self::reply::Reply;
 pub use self::command::*;
 pub use self::error::Error;
+pub use self::file_type::{FileType, TextFormat};
 
 pub mod command_kind;
 pub mod argument;
@@ -20,4 +21,5 @@ pub mod reply;
 pub mod command;
 pub mod response;
 pub mod error;
+pub mod file_type;
 

@@ -1,8 +1,10 @@
 pub use self::port::PORT;
 pub use self::mode::{MODE, Mode};
-pub use self::basic::{ABOR, CDUP, FEAT, NOOP, PASV, PWD, QUIT, REIN, STOU, SYST};
-pub use self::misc::{ACCT, APPE, CWD, DELE, HELP, LIST, MDTM, MKD, NLST, RETR, RMD, RNFR,
-                     RNTO, SITE, SIZE, STAT, STOR, USER, PASS};
+pub use self::basic::{ABOR, CDUP, FEAT, NOOP, PASV, PWD,
+                      QUIT, REIN, STOU, SYST};
+pub use self::misc::{ACCT, APPE, CWD, DELE, HELP, LIST, MDTM, MKD, NLST,
+                     RETR, RMD, RNFR, RNTO, SITE, SIZE, STAT, STOR, TYPE,
+                     USER, PASS};
 pub use self::unimplemented::*;
 
 #[macro_use]

@@ -116,6 +116,17 @@ impl Client
             FEAT(..) => {
                 protocol::response::feat::Features::default().into()
             },
+            TYPE(ref ty) => {
+                println!("file type set to {:?}", ty.file_type);
+                protocol::Reply::new(protocol::reply::code::OK, "file type set")
+            },
+            PASV(..) => {
+                println!("passive mode enabled");
+                protocol::Reply::new(protocol::reply::code::ENTERING_PASSIVE_MODE, "passive mode enabled")
+            },
+            PORT(ref _port) => {
+                protocol::Reply::new(protocol::reply::code::OK, "port")
+            },
             c => panic!("don't know how to handle {:?}", c),
         }
     }

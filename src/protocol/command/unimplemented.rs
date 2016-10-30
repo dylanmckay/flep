@@ -42,7 +42,6 @@ define_unimplemented_command!(PROT);
 define_unimplemented_command!(REST);
 define_unimplemented_command!(SMNT);
 define_unimplemented_command!(STRU);
-define_unimplemented_command!(TYPE);
 define_unimplemented_command!(XCUP);
 define_unimplemented_command!(XMKD);
 define_unimplemented_command!(XPWD);

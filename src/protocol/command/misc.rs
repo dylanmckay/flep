@@ -1,3 +1,5 @@
+use FileType;
+
 define_command!(USER {
     username: String,
 });
@@ -72,4 +74,8 @@ define_command!(STAT {
 
 define_command!(STOR {
     remote_filename: String,
+});
+
+define_command!(TYPE {
+    file_type: FileType,
 });

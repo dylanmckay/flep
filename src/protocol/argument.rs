@@ -25,6 +25,11 @@ pub trait Argument : Sized
     fn read(read: &mut BufRead) -> Result<Self, Error>;
     fn write(&self, write: &mut Write) -> Result<(), Error>;
 
+    fn parse_text(text: &str) -> Self {
+        let mut buffer = io::Cursor::new(text);
+        Self::read_with_space(&mut buffer).unwrap()
+    }
+
     fn bytes(&self) -> Vec<u8> {
         let mut buffer = io::Cursor::new(Vec::new());
         self.write(&mut buffer).unwrap();
