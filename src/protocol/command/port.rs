@@ -31,6 +31,9 @@ impl Command for PORT
         let mut payload = String::new();
         read.read_to_string(&mut payload)?;
 
+        assert_eq!(payload.chars().next(), Some(' '), "missing space after command");
+        let payload: String = payload.chars().skip(1).collect();
+
         let textual_bytes: Vec<_> = payload.split(",").collect();
         assert_eq!(textual_bytes.len(), 6, "there should be 6 bytes in a PORT payload");
 

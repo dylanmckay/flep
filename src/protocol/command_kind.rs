@@ -146,10 +146,7 @@ impl CommandKind
 
         // Split the line up.
         let (command_name, payload) = if line_string.contains(' ') {
-            let (command_name, payload) = line_string.split_at(line_string.chars().position(|c| c == ' ').expect("no space in line") + 1);
-
-            // We don't want to look at the space character.
-            (&command_name[0..command_name.len()-1], payload)
+            line_string.split_at(line_string.chars().position(|c| c == ' ').expect("no space in line"))
         } else {
             // If the line has no space, it has no payload.
             (line_string.as_str(), "")

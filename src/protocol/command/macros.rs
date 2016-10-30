@@ -18,7 +18,7 @@ macro_rules! define_command {
             fn read_payload(read: &mut ::std::io::BufRead)
                 -> Result<Self, $crate::Error> {
                 Ok($name {
-                    $( $arg_name : <$arg_ty as $crate::Argument>::read(read)?, )*
+                    $( $arg_name : <$arg_ty as $crate::Argument>::read_with_space(read)?, )*
                 })
             }
 
