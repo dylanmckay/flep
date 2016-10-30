@@ -72,10 +72,7 @@ impl Client
 
                     // The user may authenticate with no password
                     if ftp.authenticate_user(&credentials) {
-                        self.state = Session::Ready(session::Ready {
-                            credentials: credentials,
-                        });
-
+                        self.state = Session::Ready(session::Ready::new(credentials));
                         protocol::Reply::new(protocol::reply::code::USER_LOGGED_IN, "user logged in")
                     } else {
                         // The user needs a password to get through.
@@ -95,16 +92,21 @@ impl Client
                     let credentials = Credentials { username: username.to_owned(), password: Some(pass.password.to_owned()) };
 
                     if ftp.authenticate_user(&credentials) {
-                        self.state = Session::Ready(session::Ready {
-                            credentials: credentials,
-                        });
-
+                        self.state = Session::Ready(session::Ready::new(credentials));
                         protocol::Reply::new(protocol::reply::code::USER_LOGGED_IN, "user logged in")
                     } else {
                         protocol::Reply::new(protocol::reply::code::USER_NOT_LOGGED_IN, "invalid credentials")
                     }
                 } else {
                     panic!("username must be sent before password");
+                }
+            },
+            PWD(..) => {
+                if let Session::Ready(ref session) = self.state {
+                    protocol::Reply::new(protocol::reply::code::PATHNAME_CREATED,
+                                         session.working_dir.clone().into_os_string().into_string().unwrap())
+                } else {
+                    protocol::Reply::new(protocol::reply::code::USER_NOT_LOGGED_IN, "you must be logged in to do this")
                 }
             },
             // Client requesting information about the server system.

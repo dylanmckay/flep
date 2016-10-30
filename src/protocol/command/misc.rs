@@ -5,3 +5,7 @@ define_command!(USER {
 define_command!(PASS {
     password: String,
 });
+
+define_command!(CWD {
+    path: String,
+});

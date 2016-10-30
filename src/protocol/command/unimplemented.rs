@@ -28,7 +28,6 @@ define_unimplemented_command!(APPE);
 define_unimplemented_command!(AUTH);
 define_unimplemented_command!(CCC);
 define_unimplemented_command!(CONF);
-define_unimplemented_command!(CWD);
 define_unimplemented_command!(DELE);
 define_unimplemented_command!(ENC);
 define_unimplemented_command!(EPRT);

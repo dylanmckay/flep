@@ -1,5 +1,7 @@
 use Credentials;
 
+use std::path::PathBuf;
+
 /// The state of a client.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Session
@@ -27,6 +29,17 @@ pub enum Pending
 pub struct Ready
 {
     pub credentials: Credentials,
+    pub working_dir: PathBuf,
+}
+
+impl Ready
+{
+    pub fn new(credentials: Credentials) -> Self {
+        Ready {
+            credentials: credentials,
+            working_dir: "/".into(),
+        }
+    }
 }
 
 impl Default for Session
