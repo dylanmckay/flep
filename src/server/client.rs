@@ -1,4 +1,4 @@
-use {Connection, Credentials};
+use {Connection, Credentials, DataConnectionMode};
 use server::{Session, session};
 use {server, protocol, connection};
 
@@ -127,8 +127,14 @@ impl Client
                 }
             },
             PASV(..) => {
-                println!("passive mode enabled");
-                protocol::Reply::new(protocol::reply::code::ENTERING_PASSIVE_MODE, "passive mode enabled")
+                if let Session::Ready(ref mut session) = self.session {
+                    session.data_connection_mode = DataConnectionMode::Passive;
+
+                    println!("passive mode enabled");
+                    protocol::Reply::new(protocol::reply::code::ENTERING_PASSIVE_MODE, "passive mode enabled")
+                } else {
+                    panic!("send PASV command too early, need to be logged in first");
+                }
             },
             PORT(ref _port) => {
                 protocol::Reply::new(protocol::reply::code::OK, "port")

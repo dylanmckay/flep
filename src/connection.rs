@@ -26,6 +26,16 @@ pub struct DataTransfer
     pub token: mio::Token,
 }
 
+/// How the data connection should be established.
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum DataConnectionMode
+{
+    /// The server will attempt to initialize a connection on the client.
+    Active,
+    /// The client will make create the DTP connection and we will use it.
+    Passive,
+}
+
 impl Connection
 {
     pub fn has_token(&self, token: mio::Token) -> bool {
@@ -37,4 +47,10 @@ impl Connection
 
         false
     }
+}
+
+impl Default for DataConnectionMode
+{
+    // FTP defaults to active mode (unless you send 'PASV').
+    fn default() -> Self { DataConnectionMode::Active }
 }
