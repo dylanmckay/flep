@@ -1,3 +1,5 @@
+use Credentials;
+
 /// The state of a client.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Session
@@ -24,6 +26,7 @@ pub enum Pending
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Ready
 {
+    pub credentials: Credentials,
 }
 
 impl Default for Session

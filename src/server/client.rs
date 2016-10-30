@@ -72,7 +72,9 @@ impl Client
 
                     // The user may authenticate with no password
                     if ftp.authenticate_user(&credentials) {
-                        self.state = Session::Ready(session::Ready { });
+                        self.state = Session::Ready(session::Ready {
+                            credentials: credentials,
+                        });
 
                         protocol::Reply::new(protocol::reply::code::USER_LOGGED_IN, "user logged in")
                     } else {
@@ -93,7 +95,9 @@ impl Client
                     let credentials = Credentials { username: username.to_owned(), password: Some(pass.password.to_owned()) };
 
                     if ftp.authenticate_user(&credentials) {
-                        self.state = Session::Ready(session::Ready { });
+                        self.state = Session::Ready(session::Ready {
+                            credentials: credentials,
+                        });
 
                         protocol::Reply::new(protocol::reply::code::USER_LOGGED_IN, "user logged in")
                     } else {
