@@ -4,4 +4,4 @@ rust:
   - nightly
   - beta
 
-script: cargo test && cargo test -p protocol
+script: cargo test && cargo test -p flep_protocol
