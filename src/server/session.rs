@@ -36,6 +36,8 @@ pub struct Ready
     pub transfer_type: FileType,
     /// Whether the connection is active or passive.
     pub data_connection_mode: DataConnectionMode,
+    /// The port given by the 'PORT' command.
+    pub port: Option<u16>,
 }
 
 impl Ready
@@ -46,6 +48,7 @@ impl Ready
             working_dir: "/".into(),
             transfer_type: FileType::Binary,
             data_connection_mode: DataConnectionMode::default(),
+            port: None,
         }
     }
 }

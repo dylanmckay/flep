@@ -136,8 +136,13 @@ impl Client
                     panic!("send PASV command too early, need to be logged in first");
                 }
             },
-            PORT(ref _port) => {
-                protocol::Reply::new(protocol::reply::code::OK, "port")
+            PORT(ref port) => {
+                if let Session::Ready(ref mut session) = self.session {
+                    session.port = Some(port.port);
+                    protocol::Reply::new(protocol::reply::code::OK, "port")
+                } else {
+                    panic!("send PORT command too early, need to be logged in first");
+                }
             },
             c => panic!("don't know how to handle {:?}", c),
         }
@@ -160,5 +165,17 @@ impl Client
         };
 
         Ok(())
+    }
+
+    /// Checks whether the client expects a connection on a given port.
+    pub fn wants_connection_on_port(&self, port: u16) -> bool {
+        if let Session::Ready(ref session) = self.session {
+            // We only expect incoming connections for this client if we're in
+            // passive mode and have been told to expect a conn on this port.
+            session.data_connection_mode == DataConnectionMode::Passive &&
+                session.port == Some(port)
+        } else {
+            false
+        }
     }
 }
