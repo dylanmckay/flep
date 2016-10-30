@@ -3,3 +3,5 @@ language: rust
 rust:
   - nightly
   - beta
+
+script: cargo test && cargo test -p protocol
