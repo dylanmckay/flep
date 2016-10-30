@@ -7,6 +7,9 @@ pub use self::connection::Connection;
 pub use self::credentials::Credentials;
 pub use self::error::Error;
 
+// Reexports.
+pub use protocol::FileType;
+
 pub mod server;
 pub mod connection;
 pub mod credentials;

@@ -117,8 +117,14 @@ impl Client
                 protocol::response::feat::Features::default().into()
             },
             TYPE(ref ty) => {
-                println!("file type set to {:?}", ty.file_type);
-                protocol::Reply::new(protocol::reply::code::OK, "file type set")
+                if let Session::Ready(ref mut session) = self.session {
+                    session.transfer_type = ty.file_type;
+
+                    println!("file type set to {:?}", ty.file_type);
+                    protocol::Reply::new(protocol::reply::code::OK, "file type set")
+                } else {
+                    panic!("send TYPE command too early, need to be logged in first");
+                }
             },
             PASV(..) => {
                 println!("passive mode enabled");

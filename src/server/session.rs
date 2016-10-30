@@ -1,4 +1,4 @@
-use Credentials;
+use {Credentials, FileType};
 
 use std::path::PathBuf;
 
@@ -28,8 +28,12 @@ pub enum Pending
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Ready
 {
+    /// The credentials of the current user.
     pub credentials: Credentials,
+    /// The current working directory.
     pub working_dir: PathBuf,
+    /// The current data transfer file mode.
+    pub transfer_type: FileType,
 }
 
 impl Ready
@@ -38,6 +42,7 @@ impl Ready
         Ready {
             credentials: credentials,
             working_dir: "/".into(),
+            transfer_type: FileType::Binary,
         }
     }
 }
