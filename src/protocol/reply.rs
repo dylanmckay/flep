@@ -35,6 +35,22 @@ impl Reply
         }
     }
 
+    pub fn single_line<C,S>(code: C, text: S) -> Self
+        where C: Into<Code>, S: Into<String> {
+        Reply {
+            code: code.into(),
+            text: Text::SingleLine(text.into()),
+        }
+    }
+
+    pub fn multi_line<C>(code: C, lines: Vec<String>) -> Self
+        where C: Into<Code> {
+        Reply {
+            code: code.into(),
+            text: Text::MultiLine(lines),
+        }
+    }
+
     pub fn write(&self, write: &mut Write) -> Result<(), io::Error> {
         match self.text {
             Text::SingleLine(ref line) => {

@@ -73,8 +73,11 @@ impl Client
                 }
             },
             // Client requesting information about the server system.
-            SYST(ref syst) => {
+            SYST(..) => {
                 protocol::Reply::new(protocol::reply::code::SYSTEM_NAME_TYPE, protocol::rfc1700::system::UNIX)
+            },
+            FEAT(..) => {
+                protocol::response::feat::Features::default().into()
             },
             c => panic!("don't know how to handle {:?}", c),
         }

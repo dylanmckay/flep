@@ -1,6 +1,6 @@
 pub use self::port::PORT;
 pub use self::mode::{MODE, Mode};
-pub use self::basic::{ABOR, CDUP, NOOP, PASV, PWD, QUIT, REIN, STOU, SYST};
+pub use self::basic::{ABOR, CDUP, FEAT, NOOP, PASV, PWD, QUIT, REIN, STOU, SYST};
 pub use self::misc::USER;
 pub use self::unimplemented::*;
 

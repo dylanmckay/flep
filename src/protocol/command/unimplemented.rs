@@ -33,7 +33,6 @@ define_unimplemented_command!(DELE);
 define_unimplemented_command!(ENC);
 define_unimplemented_command!(EPRT);
 define_unimplemented_command!(EPSV);
-define_unimplemented_command!(FEAT);
 define_unimplemented_command!(HELP);
 define_unimplemented_command!(HOST);
 define_unimplemented_command!(LANG);
