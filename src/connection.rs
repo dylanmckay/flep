@@ -47,7 +47,20 @@ pub enum DataTransferMode
     /// The server will attempt to initialize a connection on the client.
     Active,
     /// The client will make create the DTP connection and we will use it.
-    Passive,
+    Passive { port: u16 },
+}
+
+impl Connection
+{
+    pub fn uses_token(&self, the_token: mio::Token) -> bool {
+        if self.pi.token == the_token { return true };
+
+        match self.dtp {
+            DataTransfer::None => false,
+            DataTransfer::Listening { ref token, .. } => *token == the_token,
+            DataTransfer::Connected { ref token, .. } => *token == the_token,
+        }
+    }
 }
 
 impl DataTransfer

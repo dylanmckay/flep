@@ -15,23 +15,17 @@ use mio::*;
 use mio::tcp::TcpListener;
 
 const PROTOCOL_SERVER: Token = Token(0);
-const DATA_SERVER: Token = Token(1);
 
 pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
     let protocol_addr = "127.0.0.1:2222".parse().unwrap();
-    let data_addr = "127.0.0.1:2223".parse().unwrap();
 
     // Setup the server socket
     let protocol_server = TcpListener::bind(&protocol_addr).unwrap();
-    let data_server = TcpListener::bind(&data_addr).unwrap();
 
     let mut io = Io::new().unwrap();
 
     // Start listening for incoming connections
     io.poll.register(&protocol_server, PROTOCOL_SERVER, Ready::readable(),
-                  PollOpt::edge()).unwrap();
-
-    io.poll.register(&data_server, DATA_SERVER, Ready::readable(),
                   PollOpt::edge()).unwrap();
 
     // Create storage for events
@@ -68,15 +62,12 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
                     }
 
                 },
-                DATA_SERVER => {
-                    panic!("received conn on the data server");
-                },
                 token => {
-                    let client_uuid = clients.values().find(|client| client.connection.pi.token == token).unwrap().uuid;
+                    let client_uuid = clients.values().find(|client| client.connection.uses_token(token)).unwrap().uuid;
                     let mut client = if let hash_map::Entry::Occupied(entry) = clients.entry(client_uuid) { entry } else { unreachable!() };
 
                     if event.kind().is_readable() {
-                        if let Err(e) = client.get_mut().handle_data(token, &mut ftp) {
+                        if let Err(e) = client.get_mut().handle_data(token, &mut ftp, &mut io) {
                             println!("error while processing data from client ({}): {:?}", client.get().uuid, e);
                             client.remove();
                             continue 'events;

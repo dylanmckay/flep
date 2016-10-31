@@ -1,4 +1,4 @@
-use {Connection, Credentials, DataTransfer, DataTransferMode};
+use {Connection, Credentials, DataTransfer, DataTransferMode, Io};
 use server::{Session, session};
 use {server, protocol, connection};
 
@@ -33,17 +33,47 @@ impl Client
         }
     }
 
-    pub fn handle_data(&mut self, token: mio::Token, ftp: &mut server::FileTransferProtocol)
+    pub fn handle_data(&mut self,
+                       the_token: mio::Token,
+                       ftp: &mut server::FileTransferProtocol,
+                       io: &mut Io)
         -> Result<(), server::Error> {
         let mut buffer: [u8; 10000] = [0; 10000];
-        if token == self.connection.pi.token {
+        if the_token == self.connection.pi.token {
             let bytes_written = self.connection.pi.stream.read(&mut buffer)?;
             let mut data = io::Cursor::new(&buffer[0..bytes_written]);
 
             let command = protocol::CommandKind::read(&mut data)?;
-            let reply = self.handle_command(command, ftp);
+            let reply = self.handle_command(command, ftp, io);
 
             reply.write(&mut self.connection.pi.stream)?;
+        } else {
+            let dtp = std::mem::replace(&mut self.connection.dtp,
+                                        DataTransfer::None);
+            self.connection.dtp = match dtp {
+                DataTransfer::None => unreachable!(),
+                DataTransfer::Listening { listener, token } => {
+                    assert_eq!(the_token, token);
+
+                    let (sock, _) = listener.accept()?;
+
+                    let connection_token = io.allocate_token();
+                    io.poll.register(&sock, connection_token,
+                                     mio::Ready::readable() | mio::Ready::hup(),
+                                     mio::PollOpt::edge())?;
+
+                    println!("data connection established via PASV mode");
+
+                    DataTransfer::Connected {
+                        stream: sock,
+                        token: connection_token,
+                    }
+                },
+                DataTransfer::Connected { stream, token } => {
+                    assert_eq!(the_token, token);
+                    DataTransfer::Connected { stream: stream, token: token }
+                },
+            }
         }
 
         Ok(())
@@ -51,7 +81,8 @@ impl Client
 
     fn handle_command(&mut self,
                       command: protocol::CommandKind,
-                      ftp: &mut server::FileTransferProtocol) -> protocol::Reply {
+                      ftp: &mut server::FileTransferProtocol,
+                      io: &mut Io) -> protocol::Reply {
         use protocol::CommandKind::*;
 
         println!("received {:?}", command);
@@ -101,6 +132,9 @@ impl Client
                     protocol::Reply::new(protocol::reply::code::USER_NOT_LOGGED_IN, "you must be logged in to do this")
                 }
             },
+            LIST(..) => {
+                protocol::Reply::new(150, "about to send data")
+            },
             // Client requesting information about the server system.
             SYST(..) => {
                 protocol::Reply::new(protocol::reply::code::SYSTEM_NAME_TYPE, protocol::rfc1700::system::UNIX)
@@ -120,10 +154,17 @@ impl Client
             },
             PASV(..) => {
                 if let Session::Ready(ref mut session) = self.session {
-                    session.data_connection_mode = DataTransferMode::Passive;
+                    let port = 2223;
+                    session.data_connection_mode = DataTransferMode::Passive { port: port };
+                    self.connection.dtp = DataTransfer::bind(port, io).unwrap();
+
+                    let port_bytes = [(port & 0xff00) >> 8,
+                                      (port & 0x00ff) >> 0];
+                    let textual_port = format!("{},{}", port_bytes[0], port_bytes[1]);
 
                     println!("passive mode enabled");
-                    protocol::Reply::new(protocol::reply::code::ENTERING_PASSIVE_MODE, "passive mode enabled")
+                    protocol::Reply::new(protocol::reply::code::ENTERING_PASSIVE_MODE,
+                                         format!("passive mode enabled (127,0,0,1,{})", textual_port))
                 } else {
                     panic!("send PASV command too early, need to be logged in first");
                 }
@@ -164,10 +205,13 @@ impl Client
     /// Checks whether the client expects a connection on a given port.
     pub fn wants_connection_on_port(&self, port: u16) -> bool {
         if let Session::Ready(ref session) = self.session {
-            // We only expect incoming connections for this client if we're in
-            // passive mode and have been told to expect a conn on this port.
-            session.data_connection_mode == DataTransferMode::Passive &&
+            if let DataTransferMode::Passive { .. } = session.data_connection_mode {
+                // We only expect incoming connections for this client if we're in
+                // passive mode and have been told to expect a conn on this port.
                 session.port == Some(port)
+            } else {
+                false
+            }
         } else {
             false
         }
