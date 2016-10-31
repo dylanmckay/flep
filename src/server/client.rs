@@ -67,7 +67,7 @@ impl Client
         match command {
             // User attempting to log in.
             USER(ref user) => {
-                if let Session::Pending(session::Pending::WaitingForUsername) = self.session {
+                if let Session::Login(session::Login::WaitingForUsername) = self.session {
                     let credentials = Credentials { username: user.username.to_owned(), password: None };
 
                     // The user may authenticate with no password
@@ -76,7 +76,7 @@ impl Client
                         protocol::Reply::new(protocol::reply::code::USER_LOGGED_IN, "user logged in")
                     } else {
                         // The user needs a password to get through.
-                        self.session = Session::Pending(session::Pending::WaitingForPassword {
+                        self.session = Session::Login(session::Login::WaitingForPassword {
                             username: user.username.to_owned(),
                         });
 
@@ -88,7 +88,7 @@ impl Client
                 }
             },
             PASS(ref pass) => {
-                if let Session::Pending(session::Pending::WaitingForPassword { username }) = self.session.clone() {
+                if let Session::Login(session::Login::WaitingForPassword { username }) = self.session.clone() {
                     let credentials = Credentials { username: username.to_owned(), password: Some(pass.password.to_owned()) };
 
                     if ftp.authenticate_user(&credentials) {
@@ -156,12 +156,12 @@ impl Client
         let session = std::mem::replace(&mut self.session, Session::default());
 
         self.session = match session {
-            Session::Pending(session::Pending::PendingWelcome) => {
+            Session::PendingWelcome => {
                 println!("sending welcome");
                 let welcome = protocol::Reply::new(protocol::reply::code::OK, ftp.welcome_message());
                 welcome.write(&mut self.connection.pi.stream).unwrap();
 
-                Session::Pending(session::Pending::WaitingForUsername)
+                Session::Login(session::Login::WaitingForUsername)
             },
             session => session,
         };

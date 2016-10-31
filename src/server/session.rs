@@ -6,17 +6,17 @@ use std::path::PathBuf;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Session
 {
-    /// We are waiting for the user to login.
-    Pending(Pending),
+    /// We need to send them a welcome message.
+    PendingWelcome,
+    /// We are waiting for (or in the middle of) the user to login.
+    Login(Login),
     /// We are connected and logged in as a user.
     Ready(Ready),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum Pending
+pub enum Login
 {
-    /// We need to send them a welcome message.
-    PendingWelcome,
     /// The client needs to initiate login by sending 'USER <name>'.
     WaitingForUsername,
     /// The client has initiated login, and we are waiting for their password.
@@ -34,10 +34,26 @@ pub struct Ready
     pub working_dir: PathBuf,
     /// The current data transfer file mode.
     pub transfer_type: FileType,
+    /// The current state of the data connection.
+    pub data_connection: DataConnection,
     /// Whether the connection is active or passive.
     pub data_connection_mode: DataConnectionMode,
     /// The port given by the 'PORT' command.
     pub port: Option<u16>,
+}
+
+/// The current state of the data connection.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum DataConnection
+{
+    /// Not sure if we want a data connection yet.
+    None,
+    /// We need to send an outbound connection to the client.
+    PendingOutbound{ port: u16 },
+    /// We need to receive an inbound connection from the client.
+    PendingInbound { port: u16},
+    /// We have successfully made a data protocol connection.
+    Connected,
 }
 
 impl Ready
@@ -47,6 +63,7 @@ impl Ready
             credentials: credentials,
             working_dir: "/".into(),
             transfer_type: FileType::Binary,
+            data_connection: DataConnection::None,
             data_connection_mode: DataConnectionMode::default(),
             port: None,
         }
@@ -55,7 +72,5 @@ impl Ready
 
 impl Default for Session
 {
-    fn default() -> Self {
-        Session::Pending(Pending::PendingWelcome)
-    }
+    fn default() -> Self { Session::PendingWelcome }
 }
