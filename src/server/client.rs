@@ -1,4 +1,4 @@
-use {Connection, Credentials, DataTransfer, DataConnectionMode};
+use {Connection, Credentials, DataTransfer, DataTransferMode};
 use server::{Session, session};
 use {server, protocol, connection};
 
@@ -120,7 +120,7 @@ impl Client
             },
             PASV(..) => {
                 if let Session::Ready(ref mut session) = self.session {
-                    session.data_connection_mode = DataConnectionMode::Passive;
+                    session.data_connection_mode = DataTransferMode::Passive;
 
                     println!("passive mode enabled");
                     protocol::Reply::new(protocol::reply::code::ENTERING_PASSIVE_MODE, "passive mode enabled")
@@ -166,7 +166,7 @@ impl Client
         if let Session::Ready(ref session) = self.session {
             // We only expect incoming connections for this client if we're in
             // passive mode and have been told to expect a conn on this port.
-            session.data_connection_mode == DataConnectionMode::Passive &&
+            session.data_connection_mode == DataTransferMode::Passive &&
                 session.port == Some(port)
         } else {
             false

@@ -1,4 +1,4 @@
-use {Credentials, FileType, DataConnectionMode};
+use {Credentials, FileType, DataTransferMode};
 
 use std::path::PathBuf;
 
@@ -37,7 +37,7 @@ pub struct Ready
     /// The current state of the data connection.
     pub data_connection: DataConnection,
     /// Whether the connection is active or passive.
-    pub data_connection_mode: DataConnectionMode,
+    pub data_connection_mode: DataTransferMode,
     /// The port given by the 'PORT' command.
     pub port: Option<u16>,
 }
@@ -64,7 +64,7 @@ impl Ready
             working_dir: "/".into(),
             transfer_type: FileType::Binary,
             data_connection: DataConnection::None,
-            data_connection_mode: DataConnectionMode::default(),
+            data_connection_mode: DataTransferMode::default(),
             port: None,
         }
     }

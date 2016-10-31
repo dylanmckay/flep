@@ -42,7 +42,7 @@ pub enum DataTransfer
 
 /// How the data connection should be established.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum DataConnectionMode
+pub enum DataTransferMode
 {
     /// The server will attempt to initialize a connection on the client.
     Active,
@@ -75,8 +75,8 @@ impl DataTransfer
     }
 }
 
-impl Default for DataConnectionMode
+impl Default for DataTransferMode
 {
     // FTP defaults to active mode (unless you send 'PASV').
-    fn default() -> Self { DataConnectionMode::Active }
+    fn default() -> Self { DataTransferMode::Active }
 }
