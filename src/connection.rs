@@ -31,6 +31,12 @@ pub enum DataTransfer
         /// The token for the listener.
         token: mio::Token,
     },
+    Connecting {
+        /// The underlying socket.
+        stream: TcpStream,
+        /// The token used to listen for events on the DTP stream.
+        token: mio::Token,
+    },
     /// We are connected.
     Connected {
         /// The underlying socket.
@@ -58,6 +64,7 @@ impl Connection
         match self.dtp {
             DataTransfer::None => false,
             DataTransfer::Listening { ref token, .. } => *token == the_token,
+            DataTransfer::Connecting { ref token, .. } => *token == the_token,
             DataTransfer::Connected { ref token, .. } => *token == the_token,
         }
     }

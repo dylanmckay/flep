@@ -2,17 +2,22 @@ pub use self::ftp::{FileTransferProtocol, FileSystem};
 pub use self::client::Client;
 pub use self::session::Session;
 pub use self::error::Error;
+pub use self::transfer::Transfer;
 
 pub mod ftp;
 pub mod client;
 pub mod session;
 pub mod error;
+pub mod transfer;
 
 use Io;
 use std::collections::{HashMap, hash_map};
+use std::time::Duration;
 
 use mio::*;
 use mio::tcp::TcpListener;
+
+use uuid::Uuid;
 
 const PROTOCOL_SERVER: Token = Token(0);
 
@@ -31,10 +36,14 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
     // Create storage for events
     let mut events = Events::with_capacity(1024);
 
-    let mut clients = HashMap::new();
+    let mut clients: HashMap<Uuid, Client> = HashMap::new();
 
     loop {
-        io.poll.poll(&mut events, None).unwrap();
+        for client in clients.values_mut() {
+            client.tick(&mut io).unwrap();
+        }
+
+        io.poll.poll(&mut events, Some(Duration::from_millis(30))).unwrap();
 
         'events: for event in events.iter() {
             match event.token() {
@@ -65,13 +74,12 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
                 token => {
                     let client_uuid = clients.values().find(|client| client.connection.uses_token(token)).unwrap().uuid;
                     let mut client = if let hash_map::Entry::Occupied(entry) = clients.entry(client_uuid) { entry } else { unreachable!() };
+                    println!("event: {:?}", event);
 
-                    if event.kind().is_readable() {
-                        if let Err(e) = client.get_mut().handle_data(token, &mut ftp, &mut io) {
-                            println!("error while processing data from client ({}): {:?}", client.get().uuid, e);
-                            client.remove();
-                            continue 'events;
-                        }
+                    if let Err(e) = client.get_mut().handle_event(&event, token, &mut ftp, &mut io) {
+                        println!("error while processing data from client ({}): {:?}", client.get().uuid, e);
+                        client.remove();
+                        continue 'events;
                     }
 
                     if event.kind().is_hup() {

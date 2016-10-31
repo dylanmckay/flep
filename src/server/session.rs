@@ -1,9 +1,10 @@
 use {Credentials, FileType, DataTransferMode};
+use server;
 
 use std::path::PathBuf;
 
 /// The state of a client.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug)]
 pub enum Session
 {
     /// We need to send them a welcome message.
@@ -14,7 +15,7 @@ pub enum Session
     Ready(Ready),
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug)]
 pub enum Login
 {
     /// The client needs to initiate login by sending 'USER <name>'.
@@ -25,7 +26,7 @@ pub enum Login
     },
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug)]
 pub struct Ready
 {
     /// The credentials of the current user.
@@ -40,6 +41,8 @@ pub struct Ready
     pub data_connection_mode: DataTransferMode,
     /// The port given by the 'PORT' command.
     pub port: Option<u16>,
+    /// The data transfer operations we have queued.
+    pub active_transfer: Option<server::Transfer>,
 }
 
 /// The current state of the data connection.
@@ -66,6 +69,7 @@ impl Ready
             data_connection: DataConnection::None,
             data_connection_mode: DataTransferMode::default(),
             port: None,
+            active_transfer: None,
         }
     }
 }
