@@ -20,6 +20,11 @@ pub enum TextFormat
     ASACarriageControl,
 }
 
+impl FileType
+{
+    pub fn ascii() -> Self { FileType::AsciiText(TextFormat::NonPrint) }
+}
+
 impl Argument for FileType
 {
     fn read(read: &mut BufRead) -> Result<Self, Error> {

@@ -1,4 +1,4 @@
-use {Connection, Credentials, DataTransfer, DataTransferMode, Error, Io};
+use {Connection, Credentials, DataTransfer, DataTransferMode, Error, FileType, Io};
 use server::{Session, session};
 use {server, protocol, connection};
 
@@ -88,7 +88,25 @@ impl Client
             }
 
             if event.kind().is_readable() {
-                panic!("incoming data on DTP connection!");
+                let dtp = std::mem::replace(&mut self.connection.dtp, DataTransfer::None);
+
+                self.connection.dtp = match dtp {
+                    DataTransfer::None => unreachable!(),
+                    DataTransfer::Listening { listener, .. } => {
+                        let (sock, _) = listener.accept()?;
+
+                        let connection_token = io.allocate_token();
+                        io.poll.register(&sock, connection_token,
+                                         mio::Ready::readable() | mio::Ready::hup(),
+                                         mio::PollOpt::edge())?;
+
+                        DataTransfer::Connected {
+                            stream: sock,
+                            token: connection_token,
+                        }
+                    },
+                    dtp => dtp,
+                };
             }
         }
 
@@ -150,7 +168,8 @@ impl Client
             },
             LIST(..) => {
                 self.initiate_transfer(server::Transfer {
-                    data: "foo".as_bytes().to_owned(),
+                    file_type: FileType::ascii(),
+                    data: "-rw-r--r--   1 dylan  staff    18 29 Oct 12:21 .gitignore\r\n".as_bytes().to_owned(),
                 }).unwrap();
 
                 if let DataTransfer::Connected { .. } = self.connection.dtp {
@@ -178,17 +197,20 @@ impl Client
             },
             PASV(..) => {
                 if let Session::Ready(ref mut session) = self.session {
-                    let port = 2223;
-                    session.data_connection_mode = DataTransferMode::Passive { port: port };
+                    let port = 5166;
+
+                    session.data_transfer_mode = DataTransferMode::Passive { port: port };
                     self.connection.dtp = DataTransfer::bind(port, io).unwrap();
 
                     let port_bytes = [(port & 0xff00) >> 8,
                                       (port & 0x00ff) >> 0];
                     let textual_port = format!("{},{}", port_bytes[0], port_bytes[1]);
 
-                    println!("passive mode enabled");
-                    protocol::Reply::new(protocol::reply::code::ENTERING_PASSIVE_MODE,
-                                         format!("passive mode enabled (127,0,0,1,{})", textual_port))
+                    println!("passive mode enabled on port {}", port);
+                    let reply = protocol::Reply::new(protocol::reply::code::ENTERING_PASSIVE_MODE,
+                                         format!("passive mode enabled (127,0,0,1,{})", textual_port));
+                    println!("SENT: {:?}", reply);
+                    reply
                 } else {
                     panic!("send PASV command too early, need to be logged in first");
                 }
@@ -229,7 +251,7 @@ impl Client
     /// Checks whether the client expects a connection on a given port.
     pub fn wants_connection_on_port(&self, port: u16) -> bool {
         if let Session::Ready(ref session) = self.session {
-            if let DataTransferMode::Passive { .. } = session.data_connection_mode {
+            if let DataTransferMode::Passive { .. } = session.data_transfer_mode {
                 // We only expect incoming connections for this client if we're in
                 // passive mode and have been told to expect a conn on this port.
                 session.port == Some(port)
@@ -248,9 +270,11 @@ impl Client
                 let active_transfer = std::mem::replace(&mut session.active_transfer, None);
 
                 if let Some(active_transfer) = active_transfer {
-                    match self.connection.dtp {
+                    let dtp = std::mem::replace(&mut self.connection.dtp, DataTransfer::None);
+
+                    self.connection.dtp = match dtp {
                         DataTransfer::None => {
-                            assert_eq!(session.data_connection_mode, DataTransferMode::Active);
+                            assert_eq!(session.data_transfer_mode, DataTransferMode::Active);
 
                             let addr = ("127.0.0.1", session.port.unwrap()).to_socket_addrs()?.next().unwrap();
                             let stream = mio::tcp::TcpStream::connect(&addr)?;
@@ -261,25 +285,37 @@ impl Client
                                              mio::Ready::writable(),
                                              mio::PollOpt::edge())?;
 
-                            self.connection.dtp = DataTransfer::Connecting {
-                                stream: stream,
-                                token: token,
-                            };
-
                             println!("Establishing a DTP connection for ACTIVE mode");
 
                             // We aren't ready to send data just yet.
                             session.active_transfer = Some(active_transfer);
+
+                            DataTransfer::Connecting {
+                                stream: stream,
+                                token: token,
+                            }
                         },
-                        DataTransfer::Listening { .. } |
-                            DataTransfer::Connecting { .. } => {
+                        DataTransfer::Connected { mut stream, .. } => {
+                            println!("sent file: {}", String::from_utf8(active_transfer.data.clone()).unwrap());
+
+                            self.connection.send_command(&protocol::command::TYPE {
+                                file_type: active_transfer.file_type,
+                            })?;
+
+                            stream.write(&active_transfer.data)?;
+                            stream.flush()?;
+                            drop(stream);
+
+                            self.connection.send_reply(protocol::Reply::new(226, "Transfer complete"))?;
+
+                            DataTransfer::None
+                        },
+                        state => {
                             // We aren't ready to send data just yet.
                             session.active_transfer = Some(active_transfer);
+                            state
                         },
-                        DataTransfer::Connected { ref mut stream, .. } => {
-                            stream.write(&active_transfer.data)?;
-                        },
-                    }
+                    };
                 }
 
                 Ok(())

@@ -1,4 +1,5 @@
 use {Io, Error};
+use protocol;
 
 use mio::tcp::{TcpStream, TcpListener};
 use mio;
@@ -58,6 +59,19 @@ pub enum DataTransferMode
 
 impl Connection
 {
+    pub fn send_command<C>(&mut self, command: &C) -> Result<(), Error>
+        where C: protocol::Command {
+        command.write(&mut self.pi.stream)?;
+        Ok(())
+    }
+
+    pub fn send_reply<R>(&mut self, reply: R) -> Result<(), Error>
+        where R: Into<protocol::Reply> {
+        let reply = reply.into();
+        reply.write(&mut self.pi.stream)?;
+        Ok(())
+    }
+
     pub fn uses_token(&self, the_token: mio::Token) -> bool {
         if self.pi.token == the_token { return true };
 

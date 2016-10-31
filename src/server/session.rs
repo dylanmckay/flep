@@ -38,7 +38,7 @@ pub struct Ready
     /// The current state of the data connection.
     pub data_connection: DataConnection,
     /// Whether the connection is active or passive.
-    pub data_connection_mode: DataTransferMode,
+    pub data_transfer_mode: DataTransferMode,
     /// The port given by the 'PORT' command.
     pub port: Option<u16>,
     /// The data transfer operations we have queued.
@@ -67,7 +67,7 @@ impl Ready
             working_dir: "/".into(),
             transfer_type: FileType::Binary,
             data_connection: DataConnection::None,
-            data_connection_mode: DataTransferMode::default(),
+            data_transfer_mode: DataTransferMode::default(),
             port: None,
             active_transfer: None,
         }
