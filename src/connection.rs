@@ -1,3 +1,5 @@
+use {Io, Error};
+
 use mio::tcp::{TcpStream, TcpListener};
 use mio;
 
@@ -46,6 +48,31 @@ pub enum DataConnectionMode
     Active,
     /// The client will make create the DTP connection and we will use it.
     Passive,
+}
+
+impl DataTransfer
+{
+    /// Start listening for a new data transfer on a port.
+    pub fn bind(port: u16, io: &mut Io) -> Result<Self, Error> {
+        use std::net::ToSocketAddrs;
+
+        let addr = ("127.0.0.1", port).to_socket_addrs()?.next().unwrap();
+        let listener = TcpListener::bind(&addr)?;
+
+        let token = io.allocate_token();
+
+        io.poll.register(&listener, token, mio::Ready::readable(),
+                      mio::PollOpt::edge())?;
+
+        Ok(DataTransfer::Listening {
+            listener: listener,
+            token: token,
+        })
+    }
+
+    pub fn connect() -> Result<Self, Error> {
+        unimplemented!();
+    }
 }
 
 impl Default for DataConnectionMode

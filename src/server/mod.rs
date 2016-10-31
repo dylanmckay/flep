@@ -8,6 +8,7 @@ pub mod client;
 pub mod session;
 pub mod error;
 
+use Io;
 use std::collections::{HashMap, hash_map};
 
 use mio::*;
@@ -17,8 +18,6 @@ const PROTOCOL_SERVER: Token = Token(0);
 const DATA_SERVER: Token = Token(1);
 
 pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
-    let mut token_accumulator: usize = 100;
-
     let protocol_addr = "127.0.0.1:2222".parse().unwrap();
     let data_addr = "127.0.0.1:2223".parse().unwrap();
 
@@ -26,14 +25,13 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
     let protocol_server = TcpListener::bind(&protocol_addr).unwrap();
     let data_server = TcpListener::bind(&data_addr).unwrap();
 
-    // Create an poll instance
-    let poll = Poll::new().unwrap();
+    let mut io = Io::new().unwrap();
 
     // Start listening for incoming connections
-    poll.register(&protocol_server, PROTOCOL_SERVER, Ready::readable(),
+    io.poll.register(&protocol_server, PROTOCOL_SERVER, Ready::readable(),
                   PollOpt::edge()).unwrap();
 
-    poll.register(&data_server, DATA_SERVER, Ready::readable(),
+    io.poll.register(&data_server, DATA_SERVER, Ready::readable(),
                   PollOpt::edge()).unwrap();
 
     // Create storage for events
@@ -42,7 +40,7 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
     let mut clients = HashMap::new();
 
     loop {
-        poll.poll(&mut events, None).unwrap();
+        io.poll.poll(&mut events, None).unwrap();
 
         'events: for event in events.iter() {
             match event.token() {
@@ -52,10 +50,8 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
                     let (sock, _) = protocol_server.accept().unwrap();
 
                     // Increase the token accumulator so the connection gets a unique token.
-                    token_accumulator += 1;
-
-                    let token = Token(token_accumulator);
-                    poll.register(&sock, token, Ready::readable() | Ready::hup(),
+                    let token = io.allocate_token();
+                    io.poll.register(&sock, token, Ready::readable() | Ready::hup(),
                                   PollOpt::edge()).unwrap();
 
                     let mut client = Client::new(sock, token);
