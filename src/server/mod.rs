@@ -76,7 +76,7 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
                     panic!("received conn on the data server");
                 },
                 token => {
-                    let client_uuid = clients.values().find(|client| client.connection.has_token(token)).unwrap().uuid;
+                    let client_uuid = clients.values().find(|client| client.connection.pi.token == token).unwrap().uuid;
                     let mut client = if let hash_map::Entry::Occupied(entry) = clients.entry(client_uuid) { entry } else { unreachable!() };
 
                     if event.kind().is_readable() {

@@ -1,4 +1,4 @@
-use {Connection, Credentials, DataConnectionMode};
+use {Connection, Credentials, DataTransfer, DataConnectionMode};
 use server::{Session, session};
 use {server, protocol, connection};
 
@@ -28,7 +28,7 @@ impl Client
                     stream: stream,
                     token: token,
                 },
-                dtp: None,
+                dtp: DataTransfer::None,
             },
         }
     }
@@ -44,14 +44,6 @@ impl Client
             let reply = self.handle_command(command, ftp);
 
             reply.write(&mut self.connection.pi.stream)?;
-        } else {
-            let dtp = self.connection.dtp.as_mut().unwrap();
-            assert_eq!(dtp.token, token);
-
-            let bytes_written = dtp.stream.read(&mut buffer)?;
-            let data = &buffer[0..bytes_written];
-
-            println!("receiving data on DTP stream: {:?}", data);
         }
 
         Ok(())

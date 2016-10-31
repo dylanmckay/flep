@@ -1,11 +1,11 @@
-use mio::tcp::TcpStream;
+use mio::tcp::{TcpStream, TcpListener};
 use mio;
 
 /// An FTP connection
 pub struct Connection
 {
     pub pi: Interpreter,
-    pub dtp: Option<DataTransfer>,
+    pub dtp: DataTransfer,
 }
 
 /// The protocol interpreter (PI) stream.
@@ -18,12 +18,24 @@ pub struct Interpreter
 }
 
 /// The data transfer prototocol (DTP) stream.
-pub struct DataTransfer
+pub enum DataTransfer
 {
-    /// The underlying socket.
-    pub stream: TcpStream,
-    /// The token used to listen for events on the DTP stream.
-    pub token: mio::Token,
+    /// No DTP stream has or is being set up.
+    None,
+    /// We are currently listening for the other end to open a data connection.
+    Listening {
+        /// The port we are listening on.
+        listener: TcpListener,
+        /// The token for the listener.
+        token: mio::Token,
+    },
+    /// We are connected.
+    Connected {
+        /// The underlying socket.
+        stream: TcpStream,
+        /// The token used to listen for events on the DTP stream.
+        token: mio::Token,
+    },
 }
 
 /// How the data connection should be established.
@@ -34,19 +46,6 @@ pub enum DataConnectionMode
     Active,
     /// The client will make create the DTP connection and we will use it.
     Passive,
-}
-
-impl Connection
-{
-    pub fn has_token(&self, token: mio::Token) -> bool {
-        if self.pi.token == token { return true };
-
-        if let Some(dtp) = self.dtp.as_ref() {
-            if dtp.token == token { return true };
-        }
-
-        false
-    }
 }
 
 impl Default for DataConnectionMode
