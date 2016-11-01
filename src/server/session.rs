@@ -1,5 +1,5 @@
 use {Credentials, Error, FileType, DataTransferMode};
-use server;
+use {server, protocol};
 
 use std::path::PathBuf;
 
@@ -65,9 +65,7 @@ impl Session
         if let Session::Ready(ref ready) = *self {
             Ok(ready)
         } else {
-            Err(Error::InvalidCommand {
-                message: "you must be logged in to send this command".to_owned()
-            })
+            Err(Error::Protocol(protocol::Error::Client(protocol::ClientError::NotLoggedIn)))
         }
     }
 
@@ -75,9 +73,7 @@ impl Session
         if let Session::Ready(ref mut ready) = *self {
             Ok(ready)
         } else {
-            Err(Error::InvalidCommand {
-                message: "you must be logged in to send this command".to_owned()
-            })
+            Err(Error::Protocol(protocol::Error::Client(protocol::ClientError::NotLoggedIn)))
         }
     }
 
@@ -85,9 +81,8 @@ impl Session
         if let Session::Login(ref login) = *self {
             Ok(login)
         } else {
-            Err(Error::InvalidCommand {
-                message: "you must be logged in to send this command".to_owned()
-            })
+            // FIXME: return a more appropriate error.
+            Err(Error::Protocol(protocol::Error::Client(protocol::ClientError::NotLoggedIn)))
         }
     }
 
@@ -95,9 +90,8 @@ impl Session
         if let Session::Login(ref mut login) = *self {
             Ok(login)
         } else {
-            Err(Error::InvalidCommand {
-                message: "you must be logged in to send this command".to_owned()
-            })
+            // FIXME: return a more appropriate error.
+            Err(Error::Protocol(protocol::Error::Client(protocol::ClientError::NotLoggedIn)))
         }
     }
 }

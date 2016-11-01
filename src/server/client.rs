@@ -46,7 +46,16 @@ impl Client
             let mut data = io::Cursor::new(&buffer[0..bytes_written]);
 
             let command = protocol::CommandKind::read(&mut data)?;
-            let reply = self.handle_command(command, ftp, io)?;
+            let reply = match self.handle_command(command, ftp, io) {
+                Ok(reply) => reply,
+                Err(e) => match e {
+                    // If it was client error, tell them.
+                    Error::Protocol(protocol::Error::Client(e)) => {
+                        protocol::Reply::new(e.reply_code(), format!("error: {}", e.message()))
+                    },
+                    e => return Err(e),
+                },
+            };
 
             reply.write(&mut self.connection.pi.stream)?;
         } else {

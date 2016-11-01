@@ -1,11 +1,12 @@
 use protocol;
 use std::io;
 
+/// A flep error.
 #[derive(Debug)]
 pub enum Error
 {
-    InvalidCommand { message: String },
     Protocol(protocol::Error),
+    /// An internal server error.
     Server(::server::Error),
     Io(io::Error),
 }

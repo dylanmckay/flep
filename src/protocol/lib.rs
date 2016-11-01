@@ -12,7 +12,7 @@ pub use self::command_kind::CommandKind;
 pub use self::argument::Argument;
 pub use self::reply::Reply;
 pub use self::command::*;
-pub use self::error::Error;
+pub use self::error::{Error, ClientError};
 pub use self::file_type::{FileType, TextFormat};
 
 pub mod command_kind;
