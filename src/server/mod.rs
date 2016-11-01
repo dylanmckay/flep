@@ -74,7 +74,7 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
                     let mut client = if let hash_map::Entry::Occupied(entry) = clients.entry(client_uuid) { entry } else { unreachable!() };
                     println!("event: {:?}", event);
 
-                    if let Err(e) = client.get_mut().handle_event(&event, token, &mut ftp, &mut io) {
+                    if let Err(e) = client.get_mut().handle_io_event(&event, token, &mut ftp, &mut io) {
                         println!("error while processing data from client ({}): {:?}", client.get().uuid, e);
                         client.remove();
                         continue 'events;
