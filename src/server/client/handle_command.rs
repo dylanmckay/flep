@@ -14,24 +14,27 @@ pub fn handle(client: &mut server::Client,
     match command {
         // User attempting to log in.
         USER(ref user) => {
-            if let Session::Login(session::Login::WaitingForUsername) = client.session {
+            let session = client.session.expect_login()?.clone();
+
+            if let session::Login::WaitingForUsername = session {
                 let credentials = Credentials { username: user.username.to_owned(), password: None };
 
                 // The user may authenticate with no password
                 if ftp.authenticate_user(&credentials) {
                     client.session = Session::Ready(session::Ready::new(credentials));
-                    Ok(protocol::Reply::new(protocol::reply::code::USER_LOGGED_IN, "user logged in"))
+                    Ok(protocol::reply::user::logged_in())
                 } else {
                     // The user needs a password to get through.
                     client.session = Session::Login(session::Login::WaitingForPassword {
                         username: user.username.to_owned(),
                     });
 
-                    Ok(protocol::Reply::new(protocol::reply::code::USER_NAME_OKAY_NEED_PASSWORD, "need password"))
+                    Ok(protocol::reply::user::need_password())
                 }
             } else {
-                // We can only handle USER commands during initialisation as of current
-                unimplemented!();
+                Err(protocol::Error::Client(protocol::ClientError::InvalidCommandSequence {
+                    message: "the client wait until we send the welcome message to log in".to_owned(),
+                }).into())
             }
         },
         PASS(ref pass) => {
@@ -47,7 +50,9 @@ pub fn handle(client: &mut server::Client,
                     Ok(protocol::Reply::new(protocol::reply::code::USER_NOT_LOGGED_IN, "invalid credentials"))
                 }
             } else {
-                panic!("username must be sent before password");
+                Err(protocol::Error::Client(protocol::ClientError::InvalidCommandSequence {
+                    message: "the client must send password immediately after the username is sent".to_owned(),
+                }).into())
             }
         },
         PWD(..) => {

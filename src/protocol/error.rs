@@ -18,6 +18,8 @@ pub enum ClientError
     NotLoggedIn,
     /// A given argument was invalid.
     InvalidArgument { message: String },
+    /// The sequence of commands was invalid.
+    InvalidCommandSequence { message: String },
     /// The server doesn't implement a command.
     UnimplementedCommand { name: String, },
 }
@@ -31,6 +33,7 @@ impl ClientError
             InvalidCommand { .. } => code::INVALID_COMMAND,
             NotLoggedIn => code::USER_NOT_LOGGED_IN,
             InvalidArgument { .. } => code::SYNTAX_ERROR,
+            InvalidCommandSequence { .. } => code::BAD_COMMAND_SEQUENCE,
             UnimplementedCommand { .. } => code::COMMAND_NOT_IMPLEMENTED,
         }
     }
@@ -42,6 +45,7 @@ impl ClientError
             InvalidCommand { ref name } => format!("invalid command: {}", name),
             NotLoggedIn { .. } => "not logged in".to_owned(),
             InvalidArgument { ref message } => format!("invalid argument: {}", message),
+            InvalidCommandSequence { ref message } => format!("invalid command sequence: {}", message),
             UnimplementedCommand { ref name } => format!("command unimplemented: {}", name),
         }
     }

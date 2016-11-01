@@ -5,6 +5,7 @@ pub mod code;
 pub mod feat;
 pub mod epsv;
 pub mod pasv;
+pub mod user;
 
 use std::io::prelude::*;
 use std::{io, fmt};
