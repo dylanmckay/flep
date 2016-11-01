@@ -5,10 +5,10 @@ use std::io;
 pub enum Error
 {
     Client(ClientError),
-    Server(ServerError),
     Io(io::Error),
 }
 
+/// An error that can be told to the client.
 #[derive(Debug)]
 pub enum ClientError
 {
@@ -18,31 +18,38 @@ pub enum ClientError
     NotLoggedIn,
     /// A given argument was invalid.
     InvalidArgument { message: String },
-}
-
-#[derive(Debug)]
-pub enum ServerError
-{
-    UnimplementedCommand,
+    /// The server doesn't implement a command.
+    UnimplementedCommand { name: String, },
 }
 
 impl ClientError
 {
     pub fn reply_code(&self) -> Code {
+        use ClientError::*;
+
         match *self {
-            ClientError::InvalidCommand { .. } => code::INVALID_COMMAND,
-            ClientError::NotLoggedIn { .. } => code::USER_NOT_LOGGED_IN,
-            ClientError::InvalidArgument { .. } => code::SYNTAX_ERROR,
+            InvalidCommand { .. } => code::INVALID_COMMAND,
+            NotLoggedIn => code::USER_NOT_LOGGED_IN,
+            InvalidArgument { .. } => code::SYNTAX_ERROR,
+            UnimplementedCommand { .. } => code::COMMAND_NOT_IMPLEMENTED,
         }
     }
 
     pub fn message(&self) -> String {
+        use ClientError::*;
+
         match *self {
-            ClientError::InvalidCommand { ref name } => format!("invalid command: {}", name),
-            ClientError::NotLoggedIn { .. } => "not logged in".to_owned(),
-            ClientError::InvalidArgument { ref message } => format!("invalid argument: {}", message),
+            InvalidCommand { ref name } => format!("invalid command: {}", name),
+            NotLoggedIn { .. } => "not logged in".to_owned(),
+            InvalidArgument { ref message } => format!("invalid argument: {}", message),
+            UnimplementedCommand { ref name } => format!("command unimplemented: {}", name),
         }
     }
+}
+
+impl Into<Error> for ClientError
+{
+    fn into(self) -> Error { Error::Client(self) }
 }
 
 impl From<io::Error> for Error

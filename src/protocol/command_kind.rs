@@ -172,4 +172,23 @@ impl CommandKind
             XSEN
         )
     }
+
+    pub fn command_name(&self) -> &'static str {
+        macro_rules! handle_commands {
+            ( $($cmd_name:ident),* ) => {
+                match *self {
+                    $( CommandKind::$cmd_name(ref cmd) => cmd.command_name() ),+
+                }
+            }
+        }
+
+        handle_commands!(
+            ABOR, ACCT, ADAT, ALLO, APPE, AUTH, CCC, CDUP, CONF, CWD, DELE, ENC,
+            EPRT, EPSV, FEAT, HELP, HOST, LANG, LIST, LPRT, LPSV, MDTM, MIC, MKD,
+            MLSD, MLST, MODE, NLST, NOOP, OPTS, PASS, PASV, PBSZ, PORT, PROT, PWD,
+            QUIT, REIN, REST, RETR, RMD, RNFR, RNTO, SITE, SIZE, SMNT, STAT, STOR,
+            STOU, STRU, SYST, TYPE, USER, XCUP, XMKD, XPWD, XRCP, XRMD, XRSQ, XSEM,
+            XSEN
+        )
+    }
 }

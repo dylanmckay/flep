@@ -51,6 +51,7 @@ impl Client
                 Err(e) => match e {
                     // If it was client error, tell them.
                     Error::Protocol(protocol::Error::Client(e)) => {
+                        println!("error from client: {}", e.message());
                         protocol::Reply::new(e.reply_code(), format!("error: {}", e.message()))
                     },
                     e => return Err(e),
@@ -251,7 +252,9 @@ impl Client
                 Ok(protocol::Reply::new(protocol::reply::code::OK, "port"))
             },
             command => {
-                panic!("don't know how to handle {:?}", command);
+                Err(Error::Protocol(protocol::ClientError::UnimplementedCommand {
+                    name: command.command_name().to_string(),
+                }.into()))
             },
         }
     }
