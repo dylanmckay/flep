@@ -226,7 +226,6 @@ impl Client
                                   (port & 0x00ff) >> 0];
                 let textual_port = format!("{},{}", port_bytes[0], port_bytes[1]);
 
-                println!("passive mode enabled on port {}", port);
                 let reply = protocol::Reply::new(protocol::reply::code::ENTERING_PASSIVE_MODE,
                                      format!("passive mode enabled (127,0,0,1,{})", textual_port));
                 println!("SENT: {:?}", reply);
@@ -242,7 +241,6 @@ impl Client
                 println!("passive mode enabled on port {}", port);
                 let reply = protocol::Reply::new(protocol::reply::code::ENTERING_PASSIVE_MODE_EXTENDED,
                                      format!("passive mode enabled (|||{}|)", port));
-                println!("SENT: {:?}", reply);
                 Ok(reply)
             },
             PORT(ref port) => {
