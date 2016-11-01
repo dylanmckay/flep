@@ -45,9 +45,9 @@ pub fn handle(client: &mut server::Client,
 
                 if ftp.authenticate_user(&credentials) {
                     client.session = Session::Ready(session::Ready::new(credentials));
-                    Ok(protocol::Reply::new(protocol::reply::code::USER_LOGGED_IN, "user logged in"))
+                    Ok(protocol::reply::pass::logged_in())
                 } else {
-                    Ok(protocol::Reply::new(protocol::reply::code::USER_NOT_LOGGED_IN, "invalid credentials"))
+                    Ok(protocol::reply::pass::not_logged_in("invalid credentials"))
                 }
             } else {
                 Err(protocol::Error::Client(protocol::ClientError::InvalidCommandSequence {
@@ -57,37 +57,29 @@ pub fn handle(client: &mut server::Client,
         },
         PWD(..) => {
             let session = client.session.expect_ready()?;
-
-            Ok(protocol::Reply::new(protocol::reply::code::PATHNAME_CREATED,
-                                 session.working_dir.clone().into_os_string().into_string().unwrap()))
+            Ok(protocol::reply::pwd::success(&session.working_dir))
         },
         CWD(ref cwd) => {
             let mut session = client.session.expect_ready_mut()?;
 
             session.working_dir = cwd.path.clone().into();
-            Ok(protocol::Reply::new(protocol::reply::code::REQUESTED_FILE_ACTION_COMPLETED, "cwd changes"))
+            Ok(protocol::reply::cwd::success())
         },
         CDUP(..) => {
             let mut session = client.session.expect_ready_mut()?;
 
             session.working_dir = session.working_dir.parent().unwrap().to_owned();
-            Ok(protocol::Reply::new(protocol::reply::code::REQUESTED_FILE_ACTION_COMPLETED, "cwd changes"))
+            Ok(protocol::reply::cdup::success())
         },
         LIST(..) => {
-            client.initiate_transfer(server::Transfer {
+            Ok(client.initiate_transfer(server::Transfer {
                 file_type: FileType::ascii(),
                 data: "-rw-r--r-- 1 owner group           213 Aug 26 16:31 README\r\n".as_bytes().to_owned(),
-            }).unwrap();
-
-            if let DataTransfer::Connected { .. } = client.connection.dtp {
-                Ok(protocol::Reply::new(125, "transfer starting"))
-            } else {
-                Ok(protocol::Reply::new(150, "about to open data connection"))
-            }
+            }))
         },
         // Client requesting information about the server system.
         SYST(..) => {
-            Ok(protocol::Reply::new(protocol::reply::code::SYSTEM_NAME_TYPE, protocol::rfc1700::system::UNIX))
+            Ok(protocol::reply::syst::successful(protocol::rfc1700::system::UNIX.to_owned()))
         },
         FEAT(..) => {
             Ok(protocol::reply::feat::Features::default().into())
@@ -133,5 +125,3 @@ fn listen_passive_dtp(client: &mut server::Client, io: &mut Io)
     client.connection.dtp = DataTransfer::bind(port, io).unwrap();
     Ok(port)
 }
-
-

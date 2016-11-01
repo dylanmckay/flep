@@ -10,3 +10,8 @@ pub fn logged_in() -> Reply {
 pub fn need_password() -> Reply {
     Reply::new(reply::code::USER_NAME_OKAY_NEED_PASSWORD, "need password")
 }
+
+/// Creates a reply telling the client that they were not logged in fore some reason.
+pub fn not_logged_in(reason: &str) -> Reply {
+    Reply::new(reply::code::USER_NOT_LOGGED_IN, reason)
+}
