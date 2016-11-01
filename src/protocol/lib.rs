@@ -19,7 +19,6 @@ pub mod command_kind;
 pub mod argument;
 pub mod reply;
 pub mod command;
-pub mod response;
 pub mod error;
 pub mod file_type;
 

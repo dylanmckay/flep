@@ -85,7 +85,7 @@ pub fn handle(client: &mut server::Client,
             Ok(protocol::Reply::new(protocol::reply::code::SYSTEM_NAME_TYPE, protocol::rfc1700::system::UNIX))
         },
         FEAT(..) => {
-            Ok(protocol::response::feat::Features::default().into())
+            Ok(protocol::reply::feat::Features::default().into())
         },
         TYPE(ref ty) => {
             let mut session = client.session.expect_ready_mut()?;
@@ -97,11 +97,11 @@ pub fn handle(client: &mut server::Client,
         },
         PASV(..) => {
             let port = listen_passive_dtp(client, io)?;
-            Ok(protocol::response::pasv::success(port))
+            Ok(protocol::reply::pasv::success(port))
         },
         EPSV(..) => {
             let port = listen_passive_dtp(client, io)?;
-            Ok(protocol::response::epsv::success(port))
+            Ok(protocol::reply::epsv::success(port))
         },
         PORT(ref port) => {
             let mut session = client.session.expect_ready_mut()?;
