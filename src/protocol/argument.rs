@@ -1,4 +1,4 @@
-use Error;
+use {Error, ClientError};
 
 use std::io::prelude::*;
 use std::ascii::AsciiExt;
@@ -47,7 +47,12 @@ impl Argument for String
         let bytes: Result<Vec<u8>, _> = read.bytes().collect();
         let bytes = bytes?;
 
-        Ok(String::from_utf8(bytes)?)
+        match String::from_utf8(bytes) {
+            Ok(s) => Ok(s),
+            Err(..) => Err(Error::Client(ClientError::InvalidArgument {
+                message: "argument is not valid UTF-8".to_owned() ,
+            })),
+        }
     }
 
     fn write(&self, write: &mut Write) -> Result<(), Error> {

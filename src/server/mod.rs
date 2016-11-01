@@ -1,13 +1,11 @@
 pub use self::ftp::{FileTransferProtocol, FileSystem};
 pub use self::client::Client;
 pub use self::session::Session;
-pub use self::error::Error;
 pub use self::transfer::Transfer;
 
 pub mod ftp;
 pub mod client;
 pub mod session;
-pub mod error;
 pub mod transfer;
 
 use Io;

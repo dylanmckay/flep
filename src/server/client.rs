@@ -250,13 +250,15 @@ impl Client
                 session.port = Some(port.port);
                 Ok(protocol::Reply::new(protocol::reply::code::OK, "port"))
             },
-            c => panic!("don't know how to handle {:?}", c),
+            command => {
+                panic!("don't know how to handle {:?}", command);
+            },
         }
     }
 
     /// Attempts to progress the state of the client if need be.
     pub fn progress(&mut self, ftp: &mut server::FileTransferProtocol)
-        -> Result<(), server::Error> {
+        -> Result<(), Error> {
         let session = std::mem::replace(&mut self.session, Session::default());
 
         self.session = match session {

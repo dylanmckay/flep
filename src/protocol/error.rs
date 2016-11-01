@@ -1,12 +1,12 @@
 use reply::{Code, code};
-use std::{io, string};
+use std::io;
 
 #[derive(Debug)]
 pub enum Error
 {
     Client(ClientError),
+    Server(ServerError),
     Io(io::Error),
-    FromUtf8(string::FromUtf8Error),
 }
 
 #[derive(Debug)]
@@ -16,6 +16,14 @@ pub enum ClientError
     InvalidCommand { name: String },
     /// The client is not logged in.
     NotLoggedIn,
+    /// A given argument was invalid.
+    InvalidArgument { message: String },
+}
+
+#[derive(Debug)]
+pub enum ServerError
+{
+    UnimplementedCommand,
 }
 
 impl ClientError
@@ -24,13 +32,15 @@ impl ClientError
         match *self {
             ClientError::InvalidCommand { .. } => code::INVALID_COMMAND,
             ClientError::NotLoggedIn { .. } => code::USER_NOT_LOGGED_IN,
+            ClientError::InvalidArgument { .. } => code::SYNTAX_ERROR,
         }
     }
 
-    pub fn message(&self) -> &'static str {
+    pub fn message(&self) -> String {
         match *self {
-            ClientError::InvalidCommand { .. } => "invalid command",
-            ClientError::NotLoggedIn { .. } => "not logged in",
+            ClientError::InvalidCommand { ref name } => format!("invalid command: {}", name),
+            ClientError::NotLoggedIn { .. } => "not logged in".to_owned(),
+            ClientError::InvalidArgument { ref message } => format!("invalid argument: {}", message),
         }
     }
 }
@@ -39,12 +49,5 @@ impl From<io::Error> for Error
 {
     fn from(e: io::Error) -> Self {
         Error::Io(e)
-    }
-}
-
-impl From<string::FromUtf8Error> for Error
-{
-    fn from(e: string::FromUtf8Error) -> Self {
-        Error::FromUtf8(e)
     }
 }

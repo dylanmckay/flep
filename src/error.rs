@@ -6,8 +6,6 @@ use std::io;
 pub enum Error
 {
     Protocol(protocol::Error),
-    /// An internal server error.
-    Server(::server::Error),
     Io(io::Error),
 }
 
@@ -22,12 +20,5 @@ impl From<protocol::Error> for Error
 {
     fn from(e: protocol::Error) -> Self {
         Error::Protocol(e)
-    }
-}
-
-impl From<::server::Error> for Error
-{
-    fn from(e: ::server::Error) -> Self {
-        Error::Server(e)
     }
 }
