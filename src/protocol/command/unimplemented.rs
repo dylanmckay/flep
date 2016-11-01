@@ -28,7 +28,6 @@ define_unimplemented_command!(CCC);
 define_unimplemented_command!(CONF);
 define_unimplemented_command!(ENC);
 define_unimplemented_command!(EPRT);
-define_unimplemented_command!(EPSV);
 define_unimplemented_command!(HOST);
 define_unimplemented_command!(LANG);
 define_unimplemented_command!(LPRT);

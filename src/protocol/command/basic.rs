@@ -52,6 +52,8 @@ define_basic_command!(ABOR, abor);
 define_basic_command!(CDUP, cdup);
 // Get the feature list implemented by the server.
 define_basic_command!(FEAT, feat);
+// Extended passive mode.
+define_basic_command!(EPSV, epsv);
 // A no-operation.
 define_basic_command!(NOOP, noop);
 // Enable passive mode.

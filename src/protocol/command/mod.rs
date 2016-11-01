@@ -1,6 +1,6 @@
 pub use self::port::PORT;
 pub use self::mode::{MODE, Mode};
-pub use self::basic::{ABOR, CDUP, FEAT, NOOP, PASV, PWD,
+pub use self::basic::{ABOR, CDUP, EPSV, FEAT, NOOP, PASV, PWD,
                       QUIT, REIN, STOU, SYST};
 pub use self::misc::{ACCT, APPE, CWD, DELE, HELP, LIST, MDTM, MKD, NLST,
                      RETR, RMD, RNFR, RNTO, SITE, SIZE, STAT, STOR, TYPE,

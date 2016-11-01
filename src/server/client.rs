@@ -166,10 +166,26 @@ impl Client
                     protocol::Reply::new(protocol::reply::code::USER_NOT_LOGGED_IN, "you must be logged in to do this")
                 }
             },
+            CWD(ref cwd) => {
+                if let Session::Ready(ref mut session) = self.session {
+                    session.working_dir = cwd.path.clone().into();
+                    protocol::Reply::new(protocol::reply::code::REQUESTED_FILE_ACTION_COMPLETED, "cwd changes")
+                } else {
+                    protocol::Reply::new(protocol::reply::code::USER_NOT_LOGGED_IN, "you must be logged in to do this")
+                }
+            },
+            CDUP(..) => {
+                if let Session::Ready(ref mut session) = self.session {
+                    session.working_dir = session.working_dir.parent().unwrap().to_owned();
+                    protocol::Reply::new(protocol::reply::code::REQUESTED_FILE_ACTION_COMPLETED, "cwd changes")
+                } else {
+                    protocol::Reply::new(protocol::reply::code::USER_NOT_LOGGED_IN, "you must be logged in to do this")
+                }
+            },
             LIST(..) => {
                 self.initiate_transfer(server::Transfer {
                     file_type: FileType::ascii(),
-                    data: "-rw-r--r--   1 dylan  staff    18 29 Oct 12:21 .gitignore\r\n".as_bytes().to_owned(),
+                    data: "-rw-r--r-- 1 owner group           213 Aug 26 16:31 README\r\n".as_bytes().to_owned(),
                 }).unwrap();
 
                 if let DataTransfer::Connected { .. } = self.connection.dtp {
@@ -214,6 +230,9 @@ impl Client
                 } else {
                     panic!("send PASV command too early, need to be logged in first");
                 }
+            },
+            EPSV(..) => {
+                unimplemented!();
             },
             PORT(ref port) => {
                 println!("set port to {}", port.port);
@@ -296,7 +315,7 @@ impl Client
                             }
                         },
                         DataTransfer::Connected { mut stream, .. } => {
-                            println!("sent file: {}", String::from_utf8(active_transfer.data.clone()).unwrap());
+                            println!("sent file");
 
                             self.connection.send_command(&protocol::command::TYPE {
                                 file_type: active_transfer.file_type,
@@ -306,6 +325,7 @@ impl Client
                             stream.flush()?;
                             drop(stream);
 
+                            std::thread::sleep(std::time::Duration::from_millis(800));
                             self.connection.send_reply(protocol::Reply::new(226, "Transfer complete"))?;
 
                             DataTransfer::None
