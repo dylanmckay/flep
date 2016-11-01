@@ -232,7 +232,20 @@ impl Client
                 }
             },
             EPSV(..) => {
-                unimplemented!();
+                if let Session::Ready(ref mut session) = self.session {
+                    let port = 5166;
+
+                    session.data_transfer_mode = DataTransferMode::Passive { port: port };
+                    self.connection.dtp = DataTransfer::bind(port, io).unwrap();
+
+                    println!("passive mode enabled on port {}", port);
+                    let reply = protocol::Reply::new(protocol::reply::code::ENTERING_PASSIVE_MODE_EXTENDED,
+                                         format!("passive mode enabled (|||{}|)", port));
+                    println!("SENT: {:?}", reply);
+                    reply
+                } else {
+                    panic!("send PASV command too early, need to be logged in first");
+                }
             },
             PORT(ref port) => {
                 println!("set port to {}", port.port);

@@ -118,6 +118,7 @@ pub mod code
     pub const CLOSING_DATA_CONNECTION: Code = Code(226);
     pub const CONNECTION_CLOSED_TRANSFER_ABORTED: Code = Code(426);
     pub const ENTERING_PASSIVE_MODE: Code = Code(227);
+    pub const ENTERING_PASSIVE_MODE_EXTENDED: Code = Code(229);
     pub const USER_LOGGED_IN: Code = Code(230);
     pub const USER_NOT_LOGGED_IN: Code = Code(530);
     pub const USER_NAME_OKAY_NEED_PASSWORD: Code = Code(331);
