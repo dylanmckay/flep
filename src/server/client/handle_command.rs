@@ -96,33 +96,12 @@ pub fn handle(client: &mut server::Client,
             Ok(protocol::Reply::new(protocol::reply::code::OK, "file type set"))
         },
         PASV(..) => {
-            let mut session = client.session.expect_ready_mut()?;
-
-            let port = 5166;
-
-            session.data_transfer_mode = DataTransferMode::Passive { port: port };
-            client.connection.dtp = DataTransfer::bind(port, io).unwrap();
-
-            let port_bytes = [(port & 0xff00) >> 8,
-                              (port & 0x00ff) >> 0];
-            let textual_port = format!("{},{}", port_bytes[0], port_bytes[1]);
-
-            let reply = protocol::Reply::new(protocol::reply::code::ENTERING_PASSIVE_MODE,
-                                 format!("passive mode enabled (127,0,0,1,{})", textual_port));
-            println!("SENT: {:?}", reply);
-            Ok(reply)
+            let port = listen_passive_dtp(client, io)?;
+            Ok(protocol::response::pasv::success(port))
         },
         EPSV(..) => {
-            let mut session = client.session.expect_ready_mut()?;
-            let port = 5166;
-
-            session.data_transfer_mode = DataTransferMode::Passive { port: port };
-            client.connection.dtp = DataTransfer::bind(port, io).unwrap();
-
-            println!("passive mode enabled on port {}", port);
-            let reply = protocol::Reply::new(protocol::reply::code::ENTERING_PASSIVE_MODE_EXTENDED,
-                                 format!("passive mode enabled (|||{}|)", port));
-            Ok(reply)
+            let port = listen_passive_dtp(client, io)?;
+            Ok(protocol::response::epsv::success(port))
         },
         PORT(ref port) => {
             let mut session = client.session.expect_ready_mut()?;
@@ -138,4 +117,16 @@ pub fn handle(client: &mut server::Client,
         },
     }
 }
+
+/// Attempts to open a data connection passively.
+fn listen_passive_dtp(client: &mut server::Client, io: &mut Io)
+    -> Result<u16, Error> {
+    let mut session = client.session.expect_ready_mut()?;
+    let port = 5166;
+
+    session.data_transfer_mode = DataTransferMode::Passive { port: port };
+    client.connection.dtp = DataTransfer::bind(port, io).unwrap();
+    Ok(port)
+}
+
 
