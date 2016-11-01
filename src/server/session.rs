@@ -1,4 +1,4 @@
-use {Credentials, FileType, DataTransferMode};
+use {Credentials, Error, FileType, DataTransferMode};
 use server;
 
 use std::path::PathBuf;
@@ -57,6 +57,49 @@ pub enum DataConnection
     PendingInbound { port: u16},
     /// We have successfully made a data protocol connection.
     Connected,
+}
+
+impl Session
+{
+    pub fn expect_ready(&self) -> Result<&Ready, Error> {
+        if let Session::Ready(ref ready) = *self {
+            Ok(ready)
+        } else {
+            Err(Error::InvalidCommand {
+                message: "you must be logged in to send this command".to_owned()
+            })
+        }
+    }
+
+    pub fn expect_ready_mut(&mut self) -> Result<&mut Ready, Error> {
+        if let Session::Ready(ref mut ready) = *self {
+            Ok(ready)
+        } else {
+            Err(Error::InvalidCommand {
+                message: "you must be logged in to send this command".to_owned()
+            })
+        }
+    }
+
+    pub fn expect_login(&self) -> Result<&Login, Error> {
+        if let Session::Login(ref login) = *self {
+            Ok(login)
+        } else {
+            Err(Error::InvalidCommand {
+                message: "you must be logged in to send this command".to_owned()
+            })
+        }
+    }
+
+    pub fn expect_login_mut(&mut self) -> Result<&mut Login, Error> {
+        if let Session::Login(ref mut login) = *self {
+            Ok(login)
+        } else {
+            Err(Error::InvalidCommand {
+                message: "you must be logged in to send this command".to_owned()
+            })
+        }
+    }
 }
 
 impl Ready
