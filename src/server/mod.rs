@@ -8,6 +8,8 @@ pub mod client;
 pub mod session;
 pub mod transfer;
 
+pub mod fs;
+
 use Io;
 use std::collections::{HashMap, hash_map};
 use std::time::Duration;

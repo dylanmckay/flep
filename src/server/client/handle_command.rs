@@ -72,9 +72,14 @@ pub fn handle(client: &mut server::Client,
             Ok(protocol::reply::cdup::success())
         },
         LIST(..) => {
+            let working_dir = client.session.expect_ready()?.working_dir.clone();
+
+            let entries = ftp.file_system().list(&working_dir)?;
+            let data: String = entries.join("\r\n");
+
             Ok(client.initiate_transfer(server::Transfer {
                 file_type: FileType::ascii(),
-                data: "-rw-r--r-- 1 owner group           213 Aug 26 16:31 README\r\n".as_bytes().to_owned(),
+                data: data.as_bytes().to_owned(),
             }))
         },
         // Client requesting information about the server system.
