@@ -19,20 +19,22 @@ pub fn handle_event(client: &mut Client,
         let bytes_written = client.connection.pi.stream.read(&mut buffer)?;
         let mut data = io::Cursor::new(&buffer[0..bytes_written]);
 
-        let command = protocol::CommandKind::read(&mut data)?;
-        let reply = match client.handle_command(command, ftp, io) {
-            Ok(reply) => reply,
-            Err(e) => match e {
-                // If it was client error, tell them.
-                Error::Protocol(protocol::Error::Client(e)) => {
-                    println!("error from client: {}", e.message());
-                    protocol::Reply::new(e.reply_code(), format!("error: {}", e.message()))
+        if !data.get_ref().is_empty() {
+            let command = protocol::CommandKind::read(&mut data)?;
+            let reply = match client.handle_command(command, ftp, io) {
+                Ok(reply) => reply,
+                Err(e) => match e {
+                    // If it was client error, tell them.
+                    Error::Protocol(protocol::Error::Client(e)) => {
+                        println!("error from client: {}", e.message());
+                        protocol::Reply::new(e.reply_code(), format!("error: {}", e.message()))
+                    },
+                    e => return Err(e),
                 },
-                e => return Err(e),
-            },
-        };
+            };
 
-        reply.write(&mut client.connection.pi.stream)?;
+            reply.write(&mut client.connection.pi.stream)?;
+        }
     } else {
         if event.kind().is_writable() {
             let dtp = std::mem::replace(&mut client.connection.dtp,
