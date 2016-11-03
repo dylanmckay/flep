@@ -1,5 +1,5 @@
-use {Credentials, Error};
-use std::path::Path;
+use Credentials;
+use server::FileSystem;
 
 /// An FTP server instance.
 pub trait FileTransferProtocol
@@ -12,12 +12,4 @@ pub trait FileTransferProtocol
 
     fn file_system(&self) -> &FileSystem;
     fn file_system_mut(&mut self) -> &mut FileSystem;
-}
-
-/// A filesystem mountable as FTP.
-pub trait FileSystem
-{
-    fn list(&self, path: &Path) -> Result<Vec<String>, Error>;
-
-    fn mkdir(&mut self, parent: &Path, name: String) -> Result<(), Error>;
 }
