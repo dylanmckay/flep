@@ -39,4 +39,8 @@ impl FileSystem for Physical
     fn mkdir(&mut self, _parent: &Path, _name: String) -> Result<(), Error> {
         unimplemented!();
     }
+
+    fn write(&mut self, _parent: &Path, _data: Vec<u8>) -> Result<(), Error> {
+        unimplemented!();
+    }
 }

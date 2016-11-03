@@ -149,6 +149,11 @@ impl FileSystem for Memory
             panic!("not a dir")
         }
     }
+
+    fn write(&mut self, path: &Path, data: Vec<u8>) -> Result<(), Error> {
+        let parent = self.find_node_mut(parent)?;
+        unimplemented!();
+    }
 }
 
 #[cfg(test)]
