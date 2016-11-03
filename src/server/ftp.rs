@@ -18,4 +18,6 @@ pub trait FileTransferProtocol
 pub trait FileSystem
 {
     fn list(&self, path: &Path) -> Result<Vec<String>, Error>;
+
+    fn mkdir(&mut self, parent: &Path, name: String) -> Result<(), Error>;
 }

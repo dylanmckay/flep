@@ -35,4 +35,8 @@ impl FileSystem for Physical
 
         Ok(names)
     }
+
+    fn mkdir(&mut self, _parent: &Path, _name: String) -> Result<(), Error> {
+        unimplemented!();
+    }
 }
