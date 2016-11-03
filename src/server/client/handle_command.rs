@@ -112,6 +112,10 @@ pub fn handle(client: &mut server::Client,
             session.port = Some(port.port);
             Ok(protocol::Reply::new(protocol::reply::code::OK, "port"))
         },
+        QUIT(..) => {
+            Ok(protocol::Reply::new(protocol::reply::code::SERVICE_CLOSING_CONTROL_CONNECTION,
+                                    "goodbye"))
+        },
         command => {
             Err(Error::Protocol(protocol::ClientError::UnimplementedCommand {
                 name: command.command_name().to_string(),
