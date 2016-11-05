@@ -43,4 +43,8 @@ impl FileSystem for Physical
     fn write(&mut self, _parent: &Path, _data: Vec<u8>) -> Result<(), Error> {
         unimplemented!();
     }
+
+    fn read(&self, _path: &Path) -> Result<Vec<u8>, Error> {
+        unimplemented!();
+    }
 }

@@ -15,4 +15,5 @@ pub trait FileSystem
     fn mkdir(&mut self, parent: &Path, name: String) -> Result<(), Error>;
 
     fn write(&mut self, path: &Path, data: Vec<u8>) -> Result<(), Error>;
+    fn read(&self, path: &Path) -> Result<Vec<u8>, Error>;
 }
