@@ -1,8 +1,11 @@
 extern crate flep;
 
+use flep::server::FileSystem;
+use std::path::Path;
+
 pub struct Server
 {
-    file_system: flep::server::fs::Physical,
+    file_system: flep::server::fs::Memory,
 }
 
 impl flep::server::FileTransferProtocol for Server
@@ -19,7 +22,9 @@ impl flep::server::FileTransferProtocol for Server
 }
 
 fn main() {
-    flep::server::run(Server {
-        file_system: flep::server::fs::Physical::new("./"),
-    });
+    let mut file_system = flep::server::fs::Memory::new();
+    file_system.write(&Path::new("README.txt"),
+                      "hello there\nit is me".as_bytes().to_owned()).unwrap();
+
+    flep::server::run(Server { file_system: file_system });
 }

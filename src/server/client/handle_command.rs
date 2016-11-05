@@ -2,6 +2,8 @@ use {Credentials, DataTransfer, DataTransferMode, Error, FileType, Io};
 use server::{Session, session};
 use {server, protocol};
 
+use std::path::Path;
+
 /// Handles a command sent to a server from a client.
 pub fn handle(client: &mut server::Client,
               command: protocol::CommandKind,
@@ -75,7 +77,8 @@ pub fn handle(client: &mut server::Client,
             let working_dir = client.session.expect_ready()?.working_dir.clone();
 
             let entries = ftp.file_system().list(&working_dir)?;
-            let data: String = entries.join("\r\n");
+            let mut data: String = entries.join("\r\n");
+            data.extend("\r\n".chars());
 
             Ok(client.initiate_transfer(server::Transfer {
                 file_type: FileType::ascii(),
@@ -115,6 +118,14 @@ pub fn handle(client: &mut server::Client,
         QUIT(..) => {
             Ok(protocol::Reply::new(protocol::reply::code::SERVICE_CLOSING_CONTROL_CONNECTION,
                                     "goodbye"))
+        },
+        RETR(ref retr) => {
+            let data = ftp.file_system().read(&Path::new(&retr.remote_filename))?;
+
+            Ok(client.initiate_transfer(server::Transfer {
+                file_type: FileType::ascii(),
+                data: data,
+            }))
         },
         command => {
             Err(Error::Protocol(protocol::ClientError::UnimplementedCommand {
