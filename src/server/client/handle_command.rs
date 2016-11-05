@@ -70,8 +70,13 @@ pub fn handle(client: &mut server::Client,
         CDUP(..) => {
             let mut session = client.session.expect_ready_mut()?;
 
-            session.working_dir = session.working_dir.parent().unwrap().to_owned();
-            Ok(protocol::reply::cdup::success())
+            match session.working_dir.parent().map(ToOwned::to_owned) {
+                Some(parent) => {
+                    session.working_dir = parent;
+                    Ok(protocol::reply::cdup::success())
+                },
+                None => Ok(protocol::reply::cdup::no_parent())
+            }
         },
         LIST(..) => {
             let working_dir = client.session.expect_ready()?.working_dir.clone();
