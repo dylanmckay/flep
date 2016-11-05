@@ -3,22 +3,22 @@ pub use self::client::Client;
 pub use self::session::Session;
 pub use self::transfer::Transfer;
 pub use self::fs::FileSystem;
+pub use self::server::Server;
 
 pub mod ftp;
 pub mod client;
 pub mod session;
 pub mod transfer;
+pub mod server;
 
 pub mod fs;
 
 use Io;
-use std::collections::{HashMap, hash_map};
+use std::collections::hash_map;
 use std::time::Duration;
 
 use mio::*;
 use mio::tcp::TcpListener;
-
-use uuid::Uuid;
 
 const PROTOCOL_SERVER: Token = Token(0);
 
@@ -37,10 +37,10 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
     // Create storage for events
     let mut events = Events::with_capacity(1024);
 
-    let mut clients: HashMap<Uuid, Client> = HashMap::new();
+    let mut server = Server::new();
 
     loop {
-        for client in clients.values_mut() {
+        for client in server.clients.values_mut() {
             client.tick(&mut io).unwrap();
         }
 
@@ -63,7 +63,7 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
                     match client.progress(&mut ftp) {
                         Ok(..) => {
                             println!("a client has connected ({})", client.uuid);
-                            clients.insert(client.uuid.clone(), client);
+                            server.clients.insert(client.uuid.clone(), client);
                         },
                         Err(e) => {
                             println!("error while progressing client: {:?}", e);
@@ -73,8 +73,8 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
 
                 },
                 token => {
-                    let client_uuid = clients.values().find(|client| client.connection.uses_token(token)).unwrap().uuid;
-                    let mut client = if let hash_map::Entry::Occupied(entry) = clients.entry(client_uuid) { entry } else { unreachable!() };
+                    let client_uuid = server.clients.values().find(|client| client.connection.uses_token(token)).unwrap().uuid;
+                    let mut client = if let hash_map::Entry::Occupied(entry) = server.clients.entry(client_uuid) { entry } else { unreachable!() };
                     println!("event: {:?}", event);
 
                     if let Err(e) = client.get_mut().handle_io_event(&event, token, &mut ftp, &mut io) {
