@@ -62,6 +62,38 @@ impl Argument for String
     }
 }
 
+macro_rules! impl_argument_integer {
+    ($ty:ty) => {
+        impl Argument for $ty
+        {
+            fn read(read: &mut BufRead) -> Result<Self, Error> {
+                let s = String::read(read)?;
+
+                match s.parse() {
+                    Ok(i) => Ok(i),
+                    Err(..) => Err(Error::Client(ClientError::InvalidArgument {
+                        message: "argument is not an integer".to_owned(),
+                    })),
+                }
+            }
+
+            fn write(&self, write: &mut Write) -> Result<(), Error> {
+                write!(write, "{}", self)?;
+                Ok(())
+            }
+        }
+    }
+}
+
+impl_argument_integer!(u8);
+impl_argument_integer!(i8);
+impl_argument_integer!(u16);
+impl_argument_integer!(i16);
+impl_argument_integer!(u32);
+impl_argument_integer!(i32);
+impl_argument_integer!(u64);
+impl_argument_integer!(i64);
+
 // Optional arguments are always at the end of the command.
 //
 // We know that if there is a trailing space after the previously

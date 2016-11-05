@@ -21,23 +21,15 @@ macro_rules! define_unimplemented_command
     }
 }
 
-define_unimplemented_command!(ADAT);
 define_unimplemented_command!(ALLO);
-define_unimplemented_command!(AUTH);
-define_unimplemented_command!(CCC);
-define_unimplemented_command!(CONF);
-define_unimplemented_command!(ENC);
 define_unimplemented_command!(EPRT);
 define_unimplemented_command!(HOST);
 define_unimplemented_command!(LANG);
 define_unimplemented_command!(LPRT);
 define_unimplemented_command!(LPSV);
-define_unimplemented_command!(MIC);
 define_unimplemented_command!(MLSD);
 define_unimplemented_command!(MLST);
 define_unimplemented_command!(OPTS);
-define_unimplemented_command!(PBSZ);
-define_unimplemented_command!(PROT);
 define_unimplemented_command!(REST);
 define_unimplemented_command!(SMNT);
 define_unimplemented_command!(STRU);

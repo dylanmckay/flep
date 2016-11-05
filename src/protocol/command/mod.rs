@@ -5,6 +5,7 @@ pub use self::basic::{ABOR, CDUP, EPSV, FEAT, NOOP, PASV, PWD,
 pub use self::misc::{ACCT, APPE, CWD, DELE, HELP, LIST, MDTM, MKD, NLST,
                      RETR, RMD, RNFR, RNTO, SITE, SIZE, STAT, STOR, TYPE,
                      USER, PASS};
+pub use self::security::{ADAT, AUTH, CCC, CONF, ENC, MIC, PBSZ, PROT};
 pub use self::unimplemented::*;
 
 #[macro_use]
@@ -14,6 +15,7 @@ pub mod mode;
 /// Commands which take no arguments.
 pub mod basic;
 pub mod misc;
+pub mod security;
 pub mod unimplemented;
 
 use Error;

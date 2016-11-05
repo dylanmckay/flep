@@ -7,14 +7,17 @@ macro_rules! define_command {
         }
 
         impl $crate::Command for $name {
+            #[allow(unused_variables)]
             fn write_payload(&self, write: &mut ::std::io::Write)
                 -> Result<(), $crate::Error> {
+                #[allow(unused_imports)]
                 use $crate::Argument;
 
                 $( self.$arg_name.write(write)?; )*
                 Ok(())
             }
 
+            #[allow(unused_variables)]
             fn read_payload(read: &mut ::std::io::BufRead)
                 -> Result<Self, $crate::Error> {
                 Ok($name {
