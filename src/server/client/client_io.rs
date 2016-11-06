@@ -1,4 +1,4 @@
-use {Connection, DataTransfer, Error, Io};
+use {Connection, DataTransfer, DataTransferMode, Error, Io};
 use server::client::Action;
 use server::ClientState;
 use {server, protocol};
@@ -18,7 +18,7 @@ pub fn handle_event(state: &mut ClientState,
                     io: &mut Io)
     -> Result<(), Error> {
     if the_token == connection.pi.token && event.kind().is_readable() {
-        handle_protocol_event(state, event, connection, ftp)
+        handle_protocol_event(state, event, connection, io, ftp)
     } else {
         handle_data_event(event, connection, io)
     }
@@ -28,6 +28,7 @@ pub fn handle_event(state: &mut ClientState,
 fn handle_protocol_event(state: &mut ClientState,
                          event: &mio::Event,
                          connection: &mut Connection,
+                         io: &mut Io,
                          ftp: &mut server::FileTransferProtocol)
     -> Result<(), Error> {
     let mut buffer: [u8; 10000] = [0; 10000];
@@ -55,10 +56,30 @@ fn handle_protocol_event(state: &mut ClientState,
             Action::Reply(reply) => {
                 reply.write(&mut connection.pi.stream)?;
             },
+            Action::EstablishDataConnection { reply, mode } => {
+                reply.write(&mut connection.pi.stream)?;
+
+                let mut session = state.session.expect_ready_mut().unwrap();
+                session.data_transfer_mode = mode;
+
+                match mode {
+                    DataTransferMode::Active => unimplemented!(),
+                    DataTransferMode::Passive { port } => {
+                        connection.dtp = DataTransfer::bind(port, io)?;
+                    }
+                }
+            },
             Action::Transfer(transfer) => {
                 let mut session = state.session.expect_ready_mut().unwrap();
                 session.active_transfer = Some(transfer);
-                unimplemented!();
+
+                let reply = if let DataTransfer::Connected { .. } = connection.dtp {
+                    protocol::Reply::new(125, "transfer starting")
+                } else {
+                    protocol::Reply::new(150, "about to open data connection")
+                };
+
+                reply.write(&mut connection.pi.stream)?;
             },
         }
     }

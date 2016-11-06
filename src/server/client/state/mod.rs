@@ -72,22 +72,4 @@ impl ClientState
             false
         }
     }
-
-    fn initiate_transfer(&mut self,
-                         transfer: server::Transfer)
-        -> protocol::Reply {
-        if let Session::Ready(ref mut session) = self.session {
-            assert_eq!(session.active_transfer, None);
-            session.active_transfer = Some(transfer);
-
-            unimplemented!();
-            // if let DataTransfer::Connected { .. } = connection.dtp {
-            //     protocol::Reply::new(125, "transfer starting")
-            // } else {
-            //     protocol::Reply::new(150, "about to open data connection")
-            // }
-        } else {
-            panic!("in the middle of a transfer");
-        }
-    }
 }
