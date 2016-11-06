@@ -5,10 +5,10 @@ use {server, protocol};
 use std::path::Path;
 
 /// Handles a command sent to a server from a client.
-pub fn handle(client: &mut server::Client,
-              command: protocol::CommandKind,
-              ftp: &mut server::FileTransferProtocol,
-              io: &mut Io) -> Result<protocol::Reply, Error> {
+pub fn command(client: &mut server::Client,
+               command: protocol::CommandKind,
+               ftp: &mut server::FileTransferProtocol,
+               io: &mut Io) -> Result<protocol::Reply, Error> {
     use protocol::CommandKind::*;
 
     println!("received {:?}", command);

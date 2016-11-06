@@ -7,7 +7,7 @@ use std;
 use mio;
 use uuid::Uuid;
 
-mod handle_command;
+mod handle;
 mod tick;
 mod client_io;
 
@@ -46,7 +46,7 @@ impl Client
                       command: protocol::CommandKind,
                       ftp: &mut server::FileTransferProtocol,
                       io: &mut Io) -> Result<protocol::Reply, Error> {
-        handle_command::handle(self, command, ftp, io)
+        handle::command(self, command, ftp, io)
     }
 
     /// Attempts to progress the state of the client if need be.
