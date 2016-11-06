@@ -1,15 +1,17 @@
+//! Client state.
+//!
+//! This module should be free of *all* network IO.
+
 pub use self::session::Session;
 
-use {Connection, DataTransferMode, Error, Io};
+use {Connection, DataTransferMode, Error};
 use {server, protocol};
 
 use std;
 
-use mio;
 use uuid::Uuid;
 
 mod handle;
-mod client_io;
 mod session;
 
 /// An FTP client from the point-of-view of the FTP server.
@@ -28,17 +30,7 @@ impl ClientState
         }
     }
 
-    pub fn handle_io_event(&mut self,
-                           event: &mio::Event,
-                           connection: &mut Connection,
-                           the_token: mio::Token,
-                           ftp: &mut server::FileTransferProtocol,
-                           io: &mut Io)
-        -> Result<(), Error> {
-        self::client_io::handle_event(self, event, connection, the_token, ftp, io)
-    }
-
-    fn handle_command(&mut self,
+    pub fn handle_command(&mut self,
                       command: &protocol::CommandKind,
                       ftp: &mut server::FileTransferProtocol)
         -> Result<protocol::Reply, Error> {

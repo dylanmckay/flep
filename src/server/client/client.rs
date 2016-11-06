@@ -20,6 +20,17 @@ impl Client
     pub fn tick(&mut self, io: &mut Io) -> Result<(), Error> {
         self::tick(&mut self.state, &mut self.connection, io)
     }
+
+    pub fn handle_io_event(&mut self,
+                           event: &mio::Event,
+                           the_token: mio::Token,
+                           ftp: &mut server::FileTransferProtocol,
+                           io: &mut Io)
+        -> Result<(), Error> {
+        super::client_io::handle_event(&mut self.state, event,
+                                       &mut self.connection, the_token,
+                                       ftp, io)
+    }
 }
 
 /// Does the state tick.

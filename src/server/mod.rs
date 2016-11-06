@@ -90,7 +90,7 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
 
                     {
                         let mut client_data = client.get_mut();
-                        if let Err(e) = client_data.state.handle_io_event(&event, &mut client_data.connection, token, &mut ftp, &mut io) {
+                        if let Err(e) = client_data.handle_io_event(&event, token, &mut ftp, &mut io) {
                             println!("error while processing data from client ({}): {:?}", client_data.state.uuid, e);
                             should_remove = true;
                         }
