@@ -9,7 +9,6 @@ use mio;
 use uuid::Uuid;
 
 mod handle;
-mod tick;
 mod client_io;
 mod session;
 
@@ -80,12 +79,6 @@ impl ClientState
         } else {
             false
         }
-    }
-
-    pub fn tick(&mut self,
-                connection: &mut Connection,
-                io: &mut Io) -> Result<(), Error> {
-        tick::tick(self, connection, io)
     }
 
     fn initiate_transfer(&mut self,

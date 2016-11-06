@@ -39,7 +39,7 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
 
     loop {
         for client_data in server.clients.values_mut() {
-            client_data.state.tick(&mut client_data.connection, &mut io).unwrap();
+            client_data.tick(&mut io).unwrap();
         }
 
         io.poll.poll(&mut events, Some(Duration::from_millis(30))).unwrap();
