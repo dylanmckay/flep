@@ -2,7 +2,7 @@ use {Error, FileType, server, protocol};
 
 /// Handle the 'LIST' command.
 pub fn handle(list: &protocol::LIST,
-              client: &mut server::Client,
+              client: &mut server::ClientState,
               ftp: &mut server::FileTransferProtocol)
     -> Result<protocol::Reply, Error> {
     if list.remote_filespec.is_some() {

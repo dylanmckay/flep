@@ -7,12 +7,12 @@ use uuid::Uuid;
 /// An FTP server.
 pub struct Server
 {
-    pub clients: HashMap<Uuid, ClientData>,
+    pub clients: HashMap<Uuid, Client>,
 }
 
-pub struct ClientData
+pub struct Client
 {
-    pub client: server::Client,
+    pub state: server::ClientState,
     pub connection: Connection,
 }
 

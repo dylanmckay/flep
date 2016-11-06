@@ -2,7 +2,7 @@ use {Error, server, protocol};
 
 /// Handle the 'TYPE' command.
 pub fn handle(ty: &protocol::TYPE,
-              client: &mut server::Client) -> Result<protocol::Reply, Error> {
+              client: &mut server::ClientState) -> Result<protocol::Reply, Error> {
     let mut session = client.session.expect_ready_mut()?;
 
     session.transfer_type = ty.file_type;

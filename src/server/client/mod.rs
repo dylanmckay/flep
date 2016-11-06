@@ -14,16 +14,16 @@ mod client_io;
 mod session;
 
 /// An FTP client from the point-of-view of the FTP server.
-pub struct Client
+pub struct ClientState
 {
     pub uuid: Uuid,
     pub session: Session,
 }
 
-impl Client
+impl ClientState
 {
     pub fn new() -> Self {
-        Client {
+        ClientState {
             uuid: Uuid::new_v4(),
             session: Default::default(),
         }

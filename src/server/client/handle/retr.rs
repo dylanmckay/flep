@@ -3,7 +3,7 @@ use std::path::Path;
 
 /// Handle the 'RETR' command.
 pub fn handle(retr: &protocol::RETR,
-              client: &mut server::Client,
+              client: &mut server::ClientState,
               ftp: &mut server::FileTransferProtocol)
     -> Result<protocol::Reply, Error> {
     client.session.expect_ready()?;

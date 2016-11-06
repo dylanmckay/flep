@@ -3,7 +3,7 @@ use std::path::Path;
 
 /// Handle the 'MKD' command.
 pub fn handle(mkd: &protocol::MKD,
-              client: &mut server::Client,
+              client: &mut server::ClientState,
               ftp: &mut server::FileTransferProtocol)
 -> Result<protocol::Reply, Error> {
     let session = client.session.expect_ready()?;

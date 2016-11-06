@@ -1,5 +1,5 @@
 use {Connection, DataTransfer, Error, Io};
-use server::Client;
+use server::ClientState;
 use {server, protocol};
 
 use std::io::prelude::*;
@@ -9,7 +9,7 @@ use std;
 use mio;
 
 /// Handles an IO event on the protocol or data connections.
-pub fn handle_event(client: &mut Client,
+pub fn handle_event(state: &mut ClientState,
                     event: &mio::Event,
                     connection: &mut Connection,
                     the_token: mio::Token,
@@ -17,32 +17,32 @@ pub fn handle_event(client: &mut Client,
                     io: &mut Io)
     -> Result<(), Error> {
     if the_token == connection.pi.token && event.kind().is_readable() {
-        handle_protocol_event(client, event, connection, the_token, ftp, io)
+        handle_protocol_event(state, event, connection, ftp)
     } else {
-        handle_data_event(client, event, connection, the_token, ftp, io)
+        handle_data_event(event, connection, io)
     }
 }
 
 /// Handles an IO event on the protocol stream.
-fn handle_protocol_event(client: &mut Client,
-                             event: &mio::Event,
-                             connection: &mut Connection,
-                             the_token: mio::Token,
-                             ftp: &mut server::FileTransferProtocol,
-                             io: &mut Io)
+fn handle_protocol_event(state: &mut ClientState,
+                         event: &mio::Event,
+                         connection: &mut Connection,
+                         ftp: &mut server::FileTransferProtocol)
     -> Result<(), Error> {
     let mut buffer: [u8; 10000] = [0; 10000];
     let bytes_written = connection.pi.stream.read(&mut buffer)?;
     let mut data = io::Cursor::new(&buffer[0..bytes_written]);
 
+    assert_eq!(event.kind().is_readable(), true);
+
     if !data.get_ref().is_empty() {
         let command = protocol::CommandKind::read(&mut data)?;
-        let reply = match client.handle_command(&command, ftp) {
+        let reply = match state.handle_command(&command, ftp) {
             Ok(reply) => reply,
             Err(e) => match e {
-                // If it was client error, tell them.
+                // If it was state error, tell them.
                 Error::Protocol(protocol::Error::Client(e)) => {
-                    println!("error from client: {}", e.message());
+                    println!("error from state: {}", e.message());
                     protocol::Reply::new(e.reply_code(), format!("error: {}", e.message()))
                 },
                 e => return Err(e),
@@ -56,23 +56,17 @@ fn handle_protocol_event(client: &mut Client,
 }
 
 /// Handles an IO event on the data stream.
-fn handle_data_event(client: &mut Client,
-                         event: &mio::Event,
-                         connection: &mut Connection,
-                         the_token: mio::Token,
-                         ftp: &mut server::FileTransferProtocol,
-                         io: &mut Io)
+fn handle_data_event(event: &mio::Event,
+                     connection: &mut Connection,
+                     io: &mut Io)
     -> Result<(), Error> {
-    let mut buffer: [u8; 10000] = [0; 10000];
     if event.kind().is_writable() {
         let dtp = std::mem::replace(&mut connection.dtp,
                                     DataTransfer::None);
 
         connection.dtp = match dtp {
             DataTransfer::None => unreachable!(),
-            DataTransfer::Listening { listener, token } => {
-                assert_eq!(the_token, token);
-
+            DataTransfer::Listening { listener, .. } => {
                 let (sock, _) = listener.accept()?;
 
                 let connection_token = io.allocate_token();
@@ -95,7 +89,6 @@ fn handle_data_event(client: &mut Client,
                 DataTransfer::Connected { stream: stream, token: token }
             },
             DataTransfer::Connected { stream, token } => {
-                assert_eq!(the_token, token);
                 DataTransfer::Connected { stream: stream, token: token }
             },
         }

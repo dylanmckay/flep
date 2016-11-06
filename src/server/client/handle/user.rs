@@ -4,7 +4,7 @@ use {server, protocol};
 
 /// Handle the 'USER' command.
 pub fn handle(user: &protocol::USER,
-              client: &mut server::Client,
+              client: &mut server::ClientState,
               ftp: &mut server::FileTransferProtocol)
     -> Result<protocol::Reply, Error> {
     let session = client.session.expect_login()?.clone();

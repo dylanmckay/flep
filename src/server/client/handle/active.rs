@@ -2,7 +2,7 @@ use {Error, server, protocol};
 
 /// Handle the 'PORT' command.
 pub fn handle_port(port: &protocol::PORT,
-                   client: &mut server::Client)
+                   client: &mut server::ClientState)
     -> Result<protocol::Reply, Error> {
     let mut session = client.session.expect_ready_mut()?;
 

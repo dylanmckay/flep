@@ -1,5 +1,5 @@
 use {Connection, DataTransfer, DataTransferMode, Error, Io};
-use server::client::{Client, Session};
+use server::client::{ClientState, Session};
 use protocol;
 
 use std::net::ToSocketAddrs;
@@ -8,11 +8,11 @@ use std;
 
 use mio;
 
-/// Does the client tick.
-pub fn tick(client: &mut Client,
+/// Does the state tick.
+pub fn tick(state: &mut ClientState,
             connection: &mut Connection,
             io: &mut Io) -> Result<(), Error> {
-    match client.session {
+    match state.session {
         Session::Ready(ref mut session) => {
             let active_transfer = std::mem::replace(&mut session.active_transfer, None);
 

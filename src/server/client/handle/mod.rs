@@ -17,7 +17,7 @@ use Error;
 use {server, protocol};
 
 /// Handles a command sent to a server from a client.
-pub fn command(client: &mut server::Client,
+pub fn command(client: &mut server::ClientState,
                command: &protocol::CommandKind,
                ftp: &mut server::FileTransferProtocol)
     -> Result<protocol::Reply, Error> {
@@ -34,7 +34,7 @@ pub fn command(client: &mut server::Client,
         CDUP(..) => self::cdup::handle(client),
         MKD(ref mkd) => self::mkd::handle(mkd, client, ftp),
         LIST(ref list) => self::list::handle(list, client, ftp),
-        // Client requesting information about the server system.
+        // ClientState requesting information about the server system.
         SYST(..) => self::syst::handle(),
         FEAT(..) => self::feat::handle(),
         TYPE(ref ty) => self::ty::handle(ty, client),
