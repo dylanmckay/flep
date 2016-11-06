@@ -11,6 +11,7 @@ mod passive;
 mod active;
 mod quit;
 mod retr;
+mod mkd;
 
 use {Error, Io};
 use {server, protocol};
@@ -31,6 +32,7 @@ pub fn command(client: &mut server::Client,
         PWD(..) => self::pwd::handle(client),
         CWD(ref cwd) => self::cwd::handle(cwd, client),
         CDUP(..) => self::cdup::handle(client),
+        MKD(ref mkd) => self::mkd::handle(mkd, client, ftp),
         LIST(ref list) => self::list::handle(list, client, ftp),
         // Client requesting information about the server system.
         SYST(..) => self::syst::handle(),
@@ -59,7 +61,6 @@ pub fn command(client: &mut server::Client,
         LPSV(..) => self::unimplemented("LPSV"),
         MDTM(..) => self::unimplemented("MDTM"),
         MIC(..) => self::unimplemented("MIC"),
-        MKD(..) => self::unimplemented("MKD"),
         MLSD(..) => self::unimplemented("MLSD"),
         MLST(..) => self::unimplemented("MLST"),
         MODE(..) => self::unimplemented("MODE"),
