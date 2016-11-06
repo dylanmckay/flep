@@ -1,8 +1,8 @@
 pub use self::ftp::FileTransferProtocol;
-pub use self::client::ClientState;
+pub use self::client::{Client, ClientState};
 pub use self::transfer::Transfer;
 pub use self::fs::FileSystem;
-pub use self::server::{Server, Client};
+pub use self::server::Server;
 
 pub mod ftp;
 pub mod client;

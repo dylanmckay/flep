@@ -1,5 +1,5 @@
 use {Credentials, Error};
-use server::client::{Session, session};
+use server::client::state::{Session, session};
 use {server, protocol};
 
 /// Handle the 'USER' command.

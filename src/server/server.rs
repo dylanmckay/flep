@@ -1,5 +1,4 @@
-use Connection;
-use server;
+use server::Client;
 
 use std::collections::HashMap;
 use uuid::Uuid;
@@ -8,12 +7,6 @@ use uuid::Uuid;
 pub struct Server
 {
     pub clients: HashMap<Uuid, Client>,
-}
-
-pub struct Client
-{
-    pub state: server::ClientState,
-    pub connection: Connection,
 }
 
 impl Server
