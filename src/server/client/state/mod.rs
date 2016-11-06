@@ -33,7 +33,7 @@ impl ClientState
     pub fn handle_command(&mut self,
                       command: &protocol::CommandKind,
                       ftp: &mut server::FileTransferProtocol)
-        -> Result<protocol::Reply, Error> {
+        -> Result<server::client::Action, Error> {
         handle::command(self, command, ftp)
     }
 

@@ -1,15 +1,16 @@
 use {Error, DataTransferMode, server, protocol};
+use server::client::Action;
 
 pub fn handle_pasv(client: &mut server::ClientState)
-    -> Result<protocol::Reply, Error> {
+    -> Result<Action, Error> {
     let port = listen_passive_dtp(client)?;
-    Ok(protocol::reply::pasv::success(port))
+    Ok(Action::Reply(protocol::reply::pasv::success(port)))
 }
 
 pub fn handle_epsv(client: &mut server::ClientState)
-    -> Result<protocol::Reply, Error> {
+    -> Result<Action, Error> {
     let port = listen_passive_dtp(client)?;
-    Ok(protocol::reply::epsv::success(port))
+    Ok(Action::Reply(protocol::reply::epsv::success(port)))
 }
 
 /// Attempts to open a data connection passively.

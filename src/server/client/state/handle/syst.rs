@@ -1,6 +1,7 @@
 use {Error, protocol};
+use server::client::Action;
 
 /// Handle the 'SYST' command.
-pub fn handle() -> Result<protocol::Reply, Error> {
-    Ok(protocol::reply::syst::successful(protocol::rfc1700::system::UNIX.to_owned()))
+pub fn handle() -> Result<Action, Error> {
+    Ok(Action::Reply(protocol::reply::syst::successful(protocol::rfc1700::system::UNIX.to_owned())))
 }

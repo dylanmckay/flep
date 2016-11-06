@@ -1,4 +1,5 @@
 use {Connection, DataTransfer, Error, Io};
+use server::client::Action;
 use server::ClientState;
 use {server, protocol};
 
@@ -37,19 +38,29 @@ fn handle_protocol_event(state: &mut ClientState,
 
     if !data.get_ref().is_empty() {
         let command = protocol::CommandKind::read(&mut data)?;
-        let reply = match state.handle_command(&command, ftp) {
-            Ok(reply) => reply,
+        let action = match state.handle_command(&command, ftp) {
+            Ok(action) => action,
             Err(e) => match e {
                 // If it was state error, tell them.
                 Error::Protocol(protocol::Error::Client(e)) => {
                     println!("error from state: {}", e.message());
-                    protocol::Reply::new(e.reply_code(), format!("error: {}", e.message()))
+                    Action::Reply(protocol::Reply::new(e.reply_code(), format!("error: {}", e.message())))
                 },
                 e => return Err(e),
             },
         };
 
-        reply.write(&mut connection.pi.stream)?;
+        println!("action: {:?}", action);
+        match action {
+            Action::Reply(reply) => {
+                reply.write(&mut connection.pi.stream)?;
+            },
+            Action::Transfer(transfer) => {
+                let mut session = state.session.expect_ready_mut().unwrap();
+                session.active_transfer = Some(transfer);
+                unimplemented!();
+            },
+        }
     }
 
     Ok(())

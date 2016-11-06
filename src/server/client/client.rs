@@ -44,6 +44,7 @@ fn tick(state: &mut ClientState,
             if let Some(active_transfer) = active_transfer {
                 let dtp = std::mem::replace(&mut connection.dtp, DataTransfer::None);
 
+                println!("active transfer!!!!");
                 connection.dtp = match dtp {
                     DataTransfer::None => {
                         assert_eq!(session.data_transfer_mode, DataTransferMode::Active);

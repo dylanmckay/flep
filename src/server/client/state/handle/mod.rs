@@ -14,13 +14,14 @@ mod retr;
 mod mkd;
 
 use Error;
+use server::client::Action;
 use {server, protocol};
 
 /// Handles a command sent to a server from a client.
 pub fn command(client: &mut server::ClientState,
                command: &protocol::CommandKind,
                ftp: &mut server::FileTransferProtocol)
-    -> Result<protocol::Reply, Error> {
+    -> Result<server::client::Action, Error> {
     use protocol::CommandKind::*;
 
     println!("received {:?}", command);
@@ -93,7 +94,7 @@ pub fn command(client: &mut server::ClientState,
 }
 
 /// Generate a reply for an unimplemented command.
-fn unimplemented(command_name: &'static str) -> Result<protocol::Reply, Error> {
+fn unimplemented(command_name: &'static str) -> Result<Action, Error> {
     Err(Error::Protocol(protocol::ClientError::UnimplementedCommand {
         name: command_name.to_string(),
     }.into()))
