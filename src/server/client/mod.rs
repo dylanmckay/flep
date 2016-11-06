@@ -1,6 +1,6 @@
-use {Connection, DataTransfer, DataTransferMode, Error, Io};
+use {Connection, DataTransferMode, Error, Io};
 use server::{Session, session};
-use {server, protocol, connection};
+use {server, protocol};
 
 use std;
 
@@ -16,41 +16,38 @@ pub struct Client
 {
     pub uuid: Uuid,
     pub session: Session,
-    pub connection: Connection,
 }
 
 impl Client
 {
-    pub fn new(stream: mio::tcp::TcpStream, token: mio::Token) -> Self {
+    pub fn new() -> Self {
         Client {
             uuid: Uuid::new_v4(),
             session: Default::default(),
-            connection: Connection {
-                pi: connection::Interpreter {
-                    stream: stream,
-                    token: token,
-                },
-                dtp: DataTransfer::None,
-            },
         }
     }
 
-    pub fn handle_io_event(&mut self, event: &mio::Event, the_token: mio::Token,
+    pub fn handle_io_event(&mut self,
+                           event: &mio::Event,
+                           connection: &mut Connection,
+                           the_token: mio::Token,
                            ftp: &mut server::FileTransferProtocol,
                            io: &mut Io)
         -> Result<(), Error> {
-        self::client_io::handle_event(self, event, the_token, ftp, io)
+        self::client_io::handle_event(self, event, connection, the_token, ftp, io)
     }
 
     fn handle_command(&mut self,
                       command: &protocol::CommandKind,
-                      ftp: &mut server::FileTransferProtocol,
-                      io: &mut Io) -> Result<protocol::Reply, Error> {
-        handle::command(self, command, ftp, io)
+                      ftp: &mut server::FileTransferProtocol)
+        -> Result<protocol::Reply, Error> {
+        handle::command(self, command, ftp)
     }
 
     /// Attempts to progress the state of the client if need be.
-    pub fn progress(&mut self, ftp: &mut server::FileTransferProtocol)
+    pub fn progress(&mut self,
+                    ftp: &mut server::FileTransferProtocol,
+                    connection: &mut Connection)
         -> Result<(), Error> {
         let session = std::mem::replace(&mut self.session, Session::default());
 
@@ -58,7 +55,7 @@ impl Client
             Session::PendingWelcome => {
                 println!("sending welcome");
                 let welcome = protocol::Reply::new(protocol::reply::code::OK, ftp.welcome_message());
-                welcome.write(&mut self.connection.pi.stream).unwrap();
+                welcome.write(&mut connection.pi.stream).unwrap();
 
                 Session::Login(session::Login::WaitingForUsername)
             },
@@ -84,21 +81,24 @@ impl Client
     }
 
     pub fn tick(&mut self,
+                connection: &mut Connection,
                 io: &mut Io) -> Result<(), Error> {
-        tick::tick(self, io)
+        tick::tick(self, connection, io)
     }
 
-    fn initiate_transfer(&mut self, transfer: server::Transfer)
+    fn initiate_transfer(&mut self,
+                         transfer: server::Transfer)
         -> protocol::Reply {
         if let Session::Ready(ref mut session) = self.session {
             assert_eq!(session.active_transfer, None);
             session.active_transfer = Some(transfer);
 
-            if let DataTransfer::Connected { .. } = self.connection.dtp {
-                protocol::Reply::new(125, "transfer starting")
-            } else {
-                protocol::Reply::new(150, "about to open data connection")
-            }
+            unimplemented!();
+            // if let DataTransfer::Connected { .. } = connection.dtp {
+            //     protocol::Reply::new(125, "transfer starting")
+            // } else {
+            //     protocol::Reply::new(150, "about to open data connection")
+            // }
         } else {
             panic!("in the middle of a transfer");
         }

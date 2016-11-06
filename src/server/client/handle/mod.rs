@@ -13,14 +13,14 @@ mod quit;
 mod retr;
 mod mkd;
 
-use {Error, Io};
+use Error;
 use {server, protocol};
 
 /// Handles a command sent to a server from a client.
 pub fn command(client: &mut server::Client,
                command: &protocol::CommandKind,
-               ftp: &mut server::FileTransferProtocol,
-               io: &mut Io) -> Result<protocol::Reply, Error> {
+               ftp: &mut server::FileTransferProtocol)
+    -> Result<protocol::Reply, Error> {
     use protocol::CommandKind::*;
 
     println!("received {:?}", command);
@@ -38,8 +38,8 @@ pub fn command(client: &mut server::Client,
         SYST(..) => self::syst::handle(),
         FEAT(..) => self::feat::handle(),
         TYPE(ref ty) => self::ty::handle(ty, client),
-        PASV(..) => self::passive::handle_pasv(client, io),
-        EPSV(..) => self::passive::handle_epsv(client, io),
+        PASV(..) => self::passive::handle_pasv(client),
+        EPSV(..) => self::passive::handle_epsv(client),
         PORT(ref port) => self::active::handle_port(port, client),
         QUIT(..) => self::quit::handle(),
         RETR(ref retr) => self::retr::handle(retr, client, ftp),

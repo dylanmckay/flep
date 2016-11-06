@@ -1,4 +1,4 @@
-use {DataTransfer, DataTransferMode, Error, Io};
+use {Connection, DataTransfer, DataTransferMode, Error, Io};
 use server::{Client, Session};
 use protocol;
 
@@ -10,15 +10,16 @@ use mio;
 
 /// Does the client tick.
 pub fn tick(client: &mut Client,
+            connection: &mut Connection,
             io: &mut Io) -> Result<(), Error> {
     match client.session {
         Session::Ready(ref mut session) => {
             let active_transfer = std::mem::replace(&mut session.active_transfer, None);
 
             if let Some(active_transfer) = active_transfer {
-                let dtp = std::mem::replace(&mut client.connection.dtp, DataTransfer::None);
+                let dtp = std::mem::replace(&mut connection.dtp, DataTransfer::None);
 
-                client.connection.dtp = match dtp {
+                connection.dtp = match dtp {
                     DataTransfer::None => {
                         assert_eq!(session.data_transfer_mode, DataTransferMode::Active);
 
@@ -44,7 +45,7 @@ pub fn tick(client: &mut Client,
                     DataTransfer::Connected { mut stream, .. } => {
                         println!("sent file");
 
-                        client.connection.send_command(&protocol::command::TYPE {
+                        connection.send_command(&protocol::command::TYPE {
                             file_type: active_transfer.file_type,
                         })?;
 
@@ -53,7 +54,7 @@ pub fn tick(client: &mut Client,
                         drop(stream);
 
                         std::thread::sleep(std::time::Duration::from_millis(800));
-                        client.connection.send_reply(protocol::Reply::new(226, "Transfer complete"))?;
+                        connection.send_reply(protocol::Reply::new(226, "Transfer complete"))?;
 
                         DataTransfer::None
                     },
