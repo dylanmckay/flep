@@ -43,7 +43,7 @@ impl Client
     }
 
     fn handle_command(&mut self,
-                      command: protocol::CommandKind,
+                      command: &protocol::CommandKind,
                       ftp: &mut server::FileTransferProtocol,
                       io: &mut Io) -> Result<protocol::Reply, Error> {
         handle::command(self, command, ftp, io)

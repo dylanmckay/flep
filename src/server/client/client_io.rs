@@ -21,7 +21,7 @@ pub fn handle_event(client: &mut Client,
 
         if !data.get_ref().is_empty() {
             let command = protocol::CommandKind::read(&mut data)?;
-            let reply = match client.handle_command(command, ftp, io) {
+            let reply = match client.handle_command(&command, ftp, io) {
                 Ok(reply) => reply,
                 Err(e) => match e {
                     // If it was client error, tell them.
