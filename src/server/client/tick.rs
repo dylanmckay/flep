@@ -1,5 +1,5 @@
 use {Connection, DataTransfer, DataTransferMode, Error, Io};
-use server::{Client, Session};
+use server::client::{Client, Session};
 use protocol;
 
 use std::net::ToSocketAddrs;

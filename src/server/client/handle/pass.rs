@@ -1,5 +1,5 @@
 use {Credentials, Error};
-use server::{Session, session};
+use server::client::{Session, session};
 use {server, protocol};
 
 /// Handle the 'PASS' command.

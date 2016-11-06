@@ -1,5 +1,6 @@
+pub use self::session::Session;
+
 use {Connection, DataTransferMode, Error, Io};
-use server::{Session, session};
 use {server, protocol};
 
 use std;
@@ -10,6 +11,7 @@ use uuid::Uuid;
 mod handle;
 mod tick;
 mod client_io;
+mod session;
 
 /// An FTP client from the point-of-view of the FTP server.
 pub struct Client
