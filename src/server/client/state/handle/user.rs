@@ -1,12 +1,13 @@
 use {Credentials, Error};
-use server::{Session, session};
+use server::client::state::{Session, session};
+use server::client::Action;
 use {server, protocol};
 
 /// Handle the 'USER' command.
 pub fn handle(user: &protocol::USER,
-              client: &mut server::Client,
+              client: &mut server::ClientState,
               ftp: &mut server::FileTransferProtocol)
-    -> Result<protocol::Reply, Error> {
+    -> Result<Action, Error> {
     let session = client.session.expect_login()?.clone();
 
     if let session::Login::WaitingForUsername = session {
@@ -15,14 +16,14 @@ pub fn handle(user: &protocol::USER,
         // The user may authenticate with no password
         if ftp.authenticate_user(&credentials) {
             client.session = Session::Ready(session::Ready::new(credentials));
-            Ok(protocol::reply::user::logged_in())
+            Ok(Action::Reply(protocol::reply::user::logged_in()))
         } else {
             // The user needs a password to get through.
             client.session = Session::Login(session::Login::WaitingForPassword {
                 username: user.username.to_owned(),
             });
 
-            Ok(protocol::reply::user::need_password())
+            Ok(Action::Reply(protocol::reply::user::need_password()))
         }
     } else {
         Err(protocol::Error::Client(protocol::ClientError::InvalidCommandSequence {

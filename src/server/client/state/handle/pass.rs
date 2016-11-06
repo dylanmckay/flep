@@ -1,12 +1,13 @@
 use {Credentials, Error};
-use server::{Session, session};
+use server::client::state::{Session, session};
+use server::client::Action;
 use {server, protocol};
 
 /// Handle the 'PASS' command.
 pub fn handle(pass: &protocol::PASS,
-              client: &mut server::Client,
+              client: &mut server::ClientState,
               ftp: &mut server::FileTransferProtocol)
-    -> Result<protocol::Reply, Error> {
+    -> Result<Action, Error> {
     let session = client.session.expect_login()?.clone();
 
     if let session::Login::WaitingForPassword { username } = session {
@@ -14,9 +15,9 @@ pub fn handle(pass: &protocol::PASS,
 
         if ftp.authenticate_user(&credentials) {
             client.session = Session::Ready(session::Ready::new(credentials));
-            Ok(protocol::reply::pass::logged_in())
+            Ok(Action::Reply(protocol::reply::pass::logged_in()))
         } else {
-            Ok(protocol::reply::pass::not_logged_in("invalid credentials"))
+            Ok(Action::Reply(protocol::reply::pass::not_logged_in("invalid credentials")))
         }
     } else {
         Err(protocol::Error::Client(protocol::ClientError::InvalidCommandSequence {

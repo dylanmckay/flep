@@ -1,19 +1,17 @@
 pub use self::ftp::FileTransferProtocol;
-pub use self::client::Client;
-pub use self::session::Session;
+pub use self::client::{Client, ClientState};
 pub use self::transfer::Transfer;
 pub use self::fs::FileSystem;
 pub use self::server::Server;
 
 pub mod ftp;
 pub mod client;
-pub mod session;
 pub mod transfer;
 pub mod server;
 
 pub mod fs;
 
-use Io;
+use {Connection, Io};
 use std::collections::hash_map;
 use std::time::Duration;
 
@@ -40,8 +38,8 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
     let mut server = Server::new();
 
     loop {
-        for client in server.clients.values_mut() {
-            client.tick(&mut io).unwrap();
+        for client_data in server.clients.values_mut() {
+            client_data.tick(&mut io).unwrap();
         }
 
         io.poll.poll(&mut events, Some(Duration::from_millis(30))).unwrap();
@@ -58,27 +56,47 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
                     io.poll.register(&sock, token, Ready::readable() | Ready::hup(),
                                   PollOpt::edge()).unwrap();
 
-                    let mut client = Client::new(sock, token);
+                    let mut client_state = ClientState::new();
 
-                    match client.progress(&mut ftp) {
+                    let mut connection = Connection {
+                        pi: ::connection::Interpreter {
+                            stream: sock,
+                            token: token,
+                        },
+                        dtp: ::connection::DataTransfer::None,
+                    };
+
+                    match client_state.progress(&mut ftp, &mut connection) {
                         Ok(..) => {
-                            println!("a client has connected ({})", client.uuid);
-                            server.clients.insert(client.uuid.clone(), client);
+                            println!("a client has connected ({})", client_state.uuid);
+                            server.clients.insert(client_state.uuid.clone(), Client {
+                                state: client_state,
+                                connection: connection,
+                            });
                         },
                         Err(e) => {
                             println!("error while progressing client: {:?}", e);
-                            drop(client);
+                            drop(client_state);
                         }
                     }
 
                 },
                 token => {
-                    let client_uuid = server.clients.values().find(|client| client.connection.uses_token(token)).unwrap().uuid;
+                    let client_uuid = server.clients.values().find(|client| client.connection.uses_token(token)).unwrap().state.uuid;
                     let mut client = if let hash_map::Entry::Occupied(entry) = server.clients.entry(client_uuid) { entry } else { unreachable!() };
                     println!("event: {:?}", event);
 
-                    if let Err(e) = client.get_mut().handle_io_event(&event, token, &mut ftp, &mut io) {
-                        println!("error while processing data from client ({}): {:?}", client.get().uuid, e);
+                    let mut should_remove = false;
+
+                    {
+                        let mut client_data = client.get_mut();
+                        if let Err(e) = client_data.handle_io_event(&event, token, &mut ftp, &mut io) {
+                            println!("error while processing data from client ({}): {:?}", client_data.state.uuid, e);
+                            should_remove = true;
+                        }
+                    }
+
+                    if should_remove {
                         client.remove();
                         continue 'events;
                     }

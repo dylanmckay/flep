@@ -13,14 +13,15 @@ mod quit;
 mod retr;
 mod mkd;
 
-use {Error, Io};
+use Error;
+use server::client::Action;
 use {server, protocol};
 
 /// Handles a command sent to a server from a client.
-pub fn command(client: &mut server::Client,
+pub fn command(client: &mut server::ClientState,
                command: &protocol::CommandKind,
-               ftp: &mut server::FileTransferProtocol,
-               io: &mut Io) -> Result<protocol::Reply, Error> {
+               ftp: &mut server::FileTransferProtocol)
+    -> Result<server::client::Action, Error> {
     use protocol::CommandKind::*;
 
     println!("received {:?}", command);
@@ -34,12 +35,12 @@ pub fn command(client: &mut server::Client,
         CDUP(..) => self::cdup::handle(client),
         MKD(ref mkd) => self::mkd::handle(mkd, client, ftp),
         LIST(ref list) => self::list::handle(list, client, ftp),
-        // Client requesting information about the server system.
+        // ClientState requesting information about the server system.
         SYST(..) => self::syst::handle(),
         FEAT(..) => self::feat::handle(),
         TYPE(ref ty) => self::ty::handle(ty, client),
-        PASV(..) => self::passive::handle_pasv(client, io),
-        EPSV(..) => self::passive::handle_epsv(client, io),
+        PASV(..) => self::passive::handle_pasv(client),
+        EPSV(..) => self::passive::handle_epsv(client),
         PORT(ref port) => self::active::handle_port(port, client),
         QUIT(..) => self::quit::handle(),
         RETR(ref retr) => self::retr::handle(retr, client, ftp),
@@ -93,7 +94,7 @@ pub fn command(client: &mut server::Client,
 }
 
 /// Generate a reply for an unimplemented command.
-fn unimplemented(command_name: &'static str) -> Result<protocol::Reply, Error> {
+fn unimplemented(command_name: &'static str) -> Result<Action, Error> {
     Err(Error::Protocol(protocol::ClientError::UnimplementedCommand {
         name: command_name.to_string(),
     }.into()))

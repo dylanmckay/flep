@@ -1,10 +1,11 @@
 use {Error, FileType, server, protocol};
+use server::client::Action;
 
 /// Handle the 'LIST' command.
 pub fn handle(list: &protocol::LIST,
-              client: &mut server::Client,
+              client: &mut server::ClientState,
               ftp: &mut server::FileTransferProtocol)
-    -> Result<protocol::Reply, Error> {
+    -> Result<Action, Error> {
     if list.remote_filespec.is_some() {
         unimplemented!();
     }
@@ -15,7 +16,7 @@ pub fn handle(list: &protocol::LIST,
     let mut data: String = entries.join("\r\n");
     data.extend("\r\n".chars());
 
-    Ok(client.initiate_transfer(server::Transfer {
+    Ok(Action::Transfer(server::Transfer {
         file_type: FileType::ascii(),
         data: data.as_bytes().to_owned(),
     }))

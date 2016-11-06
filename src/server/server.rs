@@ -1,4 +1,4 @@
-use server;
+use server::Client;
 
 use std::collections::HashMap;
 use uuid::Uuid;
@@ -6,7 +6,7 @@ use uuid::Uuid;
 /// An FTP server.
 pub struct Server
 {
-    pub clients: HashMap<Uuid, server::Client>,
+    pub clients: HashMap<Uuid, Client>,
 }
 
 impl Server
