@@ -35,28 +35,12 @@ pub struct Ready
     pub working_dir: PathBuf,
     /// The current data transfer file mode.
     pub transfer_type: FileType,
-    /// The current state of the data connection.
-    pub data_connection: DataConnection,
     /// Whether the connection is active or passive.
     pub data_transfer_mode: DataTransferMode,
     /// The port given by the 'PORT' command.
     pub port: Option<u16>,
     /// The data transfer operations we have queued.
     pub active_transfer: Option<server::Transfer>,
-}
-
-/// The current state of the data connection.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum DataConnection
-{
-    /// Not sure if we want a data connection yet.
-    None,
-    /// We need to send an outbound connection to the client.
-    PendingOutbound{ port: u16 },
-    /// We need to receive an inbound connection from the client.
-    PendingInbound { port: u16},
-    /// We have successfully made a data protocol connection.
-    Connected,
 }
 
 impl Session
@@ -103,7 +87,6 @@ impl Ready
             credentials: credentials,
             working_dir: "/".into(),
             transfer_type: FileType::Binary,
-            data_connection: DataConnection::None,
             data_transfer_mode: DataTransferMode::default(),
             port: None,
             active_transfer: None,
