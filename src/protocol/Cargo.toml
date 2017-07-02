@@ -1,7 +1,7 @@
 [package]
 name = "flep_protocol"
 version = "0.1.1"
-authors = ["Dylan McKay <dylanmckay34@gmail.com>"]
+authors = ["Dylan McKay <me@dylanmckay.io>"]
 
 description = "File transfer protocol (FTP) library"
 documentation = "https://docs.rs/flep_protocol"
@@ -9,7 +9,7 @@ repository = "https://github.com/dylanmckay/flep"
 
 license = "MIT"
 
-keywords = ["ftp"]
+keywords = ["ftp", "file", "transfer", "protocol"]
 
 [lib]
 path = "lib.rs"
