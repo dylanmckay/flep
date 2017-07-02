@@ -6,6 +6,7 @@ use std::net::ToSocketAddrs;
 use std::io::prelude::*;
 use std;
 
+use mio::unix::UnixReady;
 use mio;
 
 
@@ -54,7 +55,7 @@ fn tick(state: &mut ClientState,
 
                         let token = io.allocate_token();
                         io.poll.register(&stream, token,
-                                         mio::Ready::readable() | mio::Ready::hup() |
+                                         mio::Ready::readable() | UnixReady::hup() |
                                          mio::Ready::writable(),
                                          mio::PollOpt::edge())?;
 

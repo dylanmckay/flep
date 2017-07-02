@@ -16,6 +16,7 @@ use std::collections::hash_map;
 use std::time::Duration;
 
 use mio::*;
+use mio::unix::UnixReady;
 use mio::tcp::TcpListener;
 
 const PROTOCOL_SERVER: Token = Token(0);
@@ -45,6 +46,8 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
         io.poll.poll(&mut events, Some(Duration::from_millis(30))).unwrap();
 
         'events: for event in events.iter() {
+            let readiness = UnixReady::from(event.readiness());
+
             match event.token() {
                 PROTOCOL_SERVER => {
                     // Accept and drop the socket immediately, this will close
@@ -53,7 +56,7 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
 
                     // Increase the token accumulator so the connection gets a unique token.
                     let token = io.allocate_token();
-                    io.poll.register(&sock, token, Ready::readable() | Ready::hup(),
+                    io.poll.register(&sock, token, Ready::readable() | UnixReady::hup(),
                                   PollOpt::edge()).unwrap();
 
                     let mut client_state = ClientState::new();
@@ -101,7 +104,7 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
                         continue 'events;
                     }
 
-                    if event.kind().is_hup() {
+                    if readiness.is_hup() {
                         println!("client disconnected");
                         client.remove();
                     }
