@@ -14,28 +14,34 @@ pub mod fs;
 use {Connection, Io};
 use std::collections::hash_map;
 use std::time::Duration;
+use std::net::ToSocketAddrs;
 
 use mio::*;
 use mio::unix::UnixReady;
 use mio::tcp::TcpListener;
 
-const PROTOCOL_SERVER: Token = Token(0);
+const SERVER_TOKEN: Token = Token(0);
 
-pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
-    let protocol_addr = "127.0.0.1:2222".parse().unwrap();
+pub fn run<F,A>(ftp: &mut F, address: A)
+    where F: FileTransferProtocol,
+          A: ToSocketAddrs {
+    let mut addresses = address.to_socket_addrs().unwrap();
+    let address = match addresses.next() {
+        Some(addr) => addr,
+        None => panic!("no address given"),
+    };
 
     // Setup the server socket
-    let protocol_server = TcpListener::bind(&protocol_addr).unwrap();
+    let listener = TcpListener::bind(&address).unwrap();
 
     let mut io = Io::new().unwrap();
 
     // Start listening for incoming connections
-    io.poll.register(&protocol_server, PROTOCOL_SERVER, Ready::readable(),
-                  PollOpt::edge()).unwrap();
+    io.poll.register(&listener, SERVER_TOKEN, Ready::readable(),
+                     PollOpt::edge()).unwrap();
 
     // Create storage for events
     let mut events = Events::with_capacity(1024);
-
     let mut server = Server::new();
 
     loop {
@@ -49,10 +55,10 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
             let readiness = UnixReady::from(event.readiness());
 
             match event.token() {
-                PROTOCOL_SERVER => {
+                SERVER_TOKEN => {
                     // Accept and drop the socket immediately, this will close
                     // the socket and notify the client of the EOF.
-                    let (sock, _) = protocol_server.accept().unwrap();
+                    let (sock, _) = listener.accept().unwrap();
 
                     // Increase the token accumulator so the connection gets a unique token.
                     let token = io.allocate_token();
@@ -69,7 +75,7 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
                         dtp: ::connection::DataTransfer::None,
                     };
 
-                    match client_state.progress(&mut ftp, &mut connection) {
+                    match client_state.progress(ftp, &mut connection) {
                         Ok(..) => {
                             println!("a client has connected ({})", client_state.uuid);
                             server.clients.insert(client_state.uuid.clone(), Client {
@@ -93,7 +99,7 @@ pub fn run<F>(mut ftp: F) where F: FileTransferProtocol {
 
                     {
                         let mut client_data = client.get_mut();
-                        if let Err(e) = client_data.handle_io_event(&event, token, &mut ftp, &mut io) {
+                        if let Err(e) = client_data.handle_io_event(&event, token, ftp, &mut io) {
                             println!("error while processing data from client ({}): {:?}", client_data.state.uuid, e);
                             should_remove = true;
                         }
