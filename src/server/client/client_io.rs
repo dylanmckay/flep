@@ -7,6 +7,7 @@ use std::io::prelude::*;
 use std::io;
 use std;
 
+use mio::unix::UnixReady;
 use mio;
 
 /// Handles an IO event on the protocol or data connections.
@@ -17,7 +18,7 @@ pub fn handle_event(state: &mut ClientState,
                     ftp: &mut server::FileTransferProtocol,
                     io: &mut Io)
     -> Result<(), Error> {
-    if the_token == connection.pi.token && event.kind().is_readable() {
+    if the_token == connection.pi.token && event.readiness().is_readable() {
         handle_protocol_event(state, event, connection, io, ftp)
     } else {
         handle_data_event(event, connection, io)
@@ -35,7 +36,7 @@ fn handle_protocol_event(state: &mut ClientState,
     let bytes_written = connection.pi.stream.read(&mut buffer)?;
     let mut data = io::Cursor::new(&buffer[0..bytes_written]);
 
-    assert_eq!(event.kind().is_readable(), true);
+    assert_eq!(event.readiness().is_readable(), true);
 
     if !data.get_ref().is_empty() {
         let command = protocol::CommandKind::read(&mut data)?;
@@ -92,7 +93,7 @@ fn handle_data_event(event: &mio::Event,
                      connection: &mut Connection,
                      io: &mut Io)
     -> Result<(), Error> {
-    if event.kind().is_writable() {
+    if event.readiness().is_writable() {
         let dtp = std::mem::replace(&mut connection.dtp,
                                     DataTransfer::None);
 
@@ -103,7 +104,7 @@ fn handle_data_event(event: &mio::Event,
 
                 let connection_token = io.allocate_token();
                 io.poll.register(&sock, connection_token,
-                                 mio::Ready::readable() | mio::Ready::hup(),
+                                 mio::Ready::readable() | UnixReady::hup(),
                                  mio::PollOpt::edge())?;
 
                 println!("data connection established via PASV mode");
@@ -126,7 +127,7 @@ fn handle_data_event(event: &mio::Event,
         }
     }
 
-    if event.kind().is_readable() {
+    if event.readiness().is_readable() {
         let dtp = std::mem::replace(&mut connection.dtp, DataTransfer::None);
 
         connection.dtp = match dtp {
@@ -136,7 +137,7 @@ fn handle_data_event(event: &mio::Event,
 
                 let connection_token = io.allocate_token();
                 io.poll.register(&sock, connection_token,
-                                 mio::Ready::readable() | mio::Ready::hup(),
+                                 mio::Ready::readable() | UnixReady::hup(),
                                  mio::PollOpt::edge())?;
 
                 DataTransfer::Connected {
