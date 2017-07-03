@@ -1,9 +1,9 @@
 use {Error, FileType, server, protocol};
-use server::client::Action;
+use server::client::{ClientState, Action};
 
 /// Handle the 'LIST' command.
 pub fn handle(list: &protocol::LIST,
-              client: &mut server::ClientState,
+              client: &mut ClientState,
               ftp: &mut server::FileTransferProtocol)
     -> Result<Action, Error> {
     if list.remote_filespec.is_some() {

@@ -1,8 +1,8 @@
 use {Error, server, protocol};
-use server::client::Action;
+use server::client::{Action, ClientState};
 
 /// Handle the 'CDUP' command.
-pub fn handle(client: &mut server::ClientState) -> Result<Action, Error> {
+pub fn handle(client: &mut ClientState) -> Result<Action, Error> {
     let mut session = client.session.expect_ready_mut()?;
 
     match session.working_dir.parent().map(ToOwned::to_owned) {

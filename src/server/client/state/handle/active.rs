@@ -1,9 +1,9 @@
 use {Error, server, protocol};
-use server::client::Action;
+use server::client::{ClientState, Action};
 
 /// Handle the 'PORT' command.
 pub fn handle_port(port: &protocol::PORT,
-                   client: &mut server::ClientState)
+                   client: &mut ClientState)
     -> Result<Action, Error> {
     let mut session = client.session.expect_ready_mut()?;
 

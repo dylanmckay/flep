@@ -1,10 +1,10 @@
 use {Error, FileType, server, protocol};
-use server::client::Action;
+use server::client::{ClientState, Action};
 use std::path::Path;
 
 /// Handle the 'RETR' command.
 pub fn handle(retr: &protocol::RETR,
-              client: &mut server::ClientState,
+              client: &mut ClientState,
               ftp: &mut server::FileTransferProtocol)
     -> Result<Action, Error> {
     client.session.expect_ready()?;

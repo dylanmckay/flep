@@ -1,7 +1,7 @@
 use {Error, DataTransferMode, server, protocol};
-use server::client::Action;
+use server::client::{ClientState, Action};
 
-pub fn handle_pasv(client: &mut server::ClientState)
+pub fn handle_pasv(client: &mut ClientState)
     -> Result<Action, Error> {
     let port = listen_passive_dtp(client)?;
     Ok(Action::EstablishDataConnection {
@@ -10,7 +10,7 @@ pub fn handle_pasv(client: &mut server::ClientState)
     })
 }
 
-pub fn handle_epsv(client: &mut server::ClientState)
+pub fn handle_epsv(client: &mut ClientState)
     -> Result<Action, Error> {
     let port = listen_passive_dtp(client)?;
     Ok(Action::EstablishDataConnection {
@@ -20,7 +20,7 @@ pub fn handle_epsv(client: &mut server::ClientState)
 }
 
 /// Attempts to open a data connection passively.
-fn listen_passive_dtp(client: &mut server::ClientState)
+fn listen_passive_dtp(client: &mut ClientState)
     -> Result<u16, Error> {
     let mut session = client.session.expect_ready_mut()?;
     let port = 5166;

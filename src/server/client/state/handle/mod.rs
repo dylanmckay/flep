@@ -14,14 +14,13 @@ mod retr;
 mod mkd;
 
 use Error;
-use server::client::Action;
+use server::client::{ClientState, Action};
 use {server, protocol};
 
 /// Handles a command sent to a server from a client.
-pub fn command(client: &mut server::ClientState,
+pub fn command(client: &mut ClientState,
                command: &protocol::CommandKind,
-               ftp: &mut server::FileTransferProtocol)
-    -> Result<server::client::Action, Error> {
+               ftp: &mut server::FileTransferProtocol) -> Result<Action, Error> {
     use protocol::CommandKind::*;
 
     println!("received {:?}", command);

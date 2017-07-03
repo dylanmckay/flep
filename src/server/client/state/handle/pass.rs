@@ -1,11 +1,11 @@
 use {Credentials, Error};
 use server::client::state::{Session, session};
-use server::client::Action;
+use server::client::{ClientState, Action};
 use {server, protocol};
 
 /// Handle the 'PASS' command.
 pub fn handle(pass: &protocol::PASS,
-              client: &mut server::ClientState,
+              client: &mut ClientState,
               ftp: &mut server::FileTransferProtocol)
     -> Result<Action, Error> {
     let session = client.session.expect_login()?.clone();

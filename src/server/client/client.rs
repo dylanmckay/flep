@@ -9,10 +9,9 @@ use std;
 use mio::unix::UnixReady;
 use mio;
 
-
 pub struct Client
 {
-    pub state: server::ClientState,
+    pub state: ClientState,
     pub connection: Connection,
 }
 
