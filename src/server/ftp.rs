@@ -1,5 +1,5 @@
 use Credentials;
-use server::FileSystem;
+use fs::FileSystem;
 
 /// An FTP server instance.
 pub trait FileTransferProtocol

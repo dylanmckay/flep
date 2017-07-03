@@ -1,5 +1,5 @@
 use Error;
-use server::FileSystem;
+use super::FileSystem;
 
 use std::collections::HashMap;
 use std::path::Path;
@@ -272,9 +272,8 @@ mod test
     }
 
     mod mkdir {
-        use super::super::{Node, NodeKind, Directory};
+        use super::super::{Node, NodeKind, Directory, FileSystem};
         pub use super::*;
-        use server::FileSystem;
         use std::path::Path;
 
         #[test]
@@ -293,9 +292,8 @@ mod test
     }
 
     mod write {
-        use super::super::{Node, NodeKind, File, Directory};
+        use super::super::{Node, NodeKind, File, Directory, FileSystem};
         pub use super::*;
-        use server::FileSystem;
         use std::path::Path;
 
         #[test]
@@ -316,7 +314,7 @@ mod test
 
     mod read {
         pub use super::*;
-        use server::FileSystem;
+        use super::super::FileSystem;
         use std::path::Path;
 
         #[test]

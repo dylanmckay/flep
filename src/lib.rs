@@ -12,6 +12,7 @@ pub use self::errors::*;
 pub use protocol::FileType;
 
 pub mod server;
-pub mod credentials;
-pub mod errors;
 pub mod io;
+pub mod fs;
+mod credentials;
+mod errors;

@@ -1,5 +1,5 @@
 use Error;
-use server::FileSystem;
+use super::FileSystem;
 
 use std::path::{Path, PathBuf};
 use std::fs;
