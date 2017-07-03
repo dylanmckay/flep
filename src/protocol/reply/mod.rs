@@ -1,4 +1,4 @@
-pub use self::code::Code;
+pub use self::code::{Code, AsReplyCode};
 
 pub mod code;
 

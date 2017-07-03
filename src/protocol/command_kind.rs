@@ -158,7 +158,7 @@ impl CommandKind
             ( $cmd_name:ident => $( $name:ident ),+ ) => {
                 match command_name {
                     $( stringify!($name) => Ok(CommandKind::$name($name::read_payload(&mut payload_reader)?)), )+
-                    _ => Err(Error::Client(ClientError::InvalidCommand { name: command_name.to_owned() })),
+                    _ => Err(ErrorKind::InvalidCommand(command_name.to_owned()).into()),
                 }
             }
         }

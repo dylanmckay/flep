@@ -95,7 +95,7 @@ pub fn command(client: &mut server::ClientState,
 
 /// Generate a reply for an unimplemented command.
 fn unimplemented(command_name: &'static str) -> Result<Action, Error> {
-    Err(Error::Protocol(protocol::ClientError::UnimplementedCommand {
-        name: command_name.to_string(),
-    }.into()))
+    Err(protocol::Error::from_kind(protocol::ErrorKind::UnimplementedCommand(
+        command_name.to_string(),
+    )).into())
 }

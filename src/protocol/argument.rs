@@ -1,4 +1,4 @@
-use {Error, ClientError};
+use {Error, ErrorKind};
 
 use std::io::prelude::*;
 use std::ascii::AsciiExt;
@@ -49,9 +49,7 @@ impl Argument for String
 
         match String::from_utf8(bytes) {
             Ok(s) => Ok(s),
-            Err(..) => Err(Error::Client(ClientError::InvalidArgument {
-                message: "argument is not valid UTF-8".to_owned() ,
-            })),
+            Err(..) => Err(ErrorKind::InvalidArgument("argument is not valid UTF-8".to_owned()).into()),
         }
     }
 
@@ -71,9 +69,7 @@ macro_rules! impl_argument_integer {
 
                 match s.parse() {
                     Ok(i) => Ok(i),
-                    Err(..) => Err(Error::Client(ClientError::InvalidArgument {
-                        message: "argument is not an integer".to_owned(),
-                    })),
+                    Err(..) => Err(ErrorKind::InvalidArgument("argument is not an integer".to_owned()).into()),
                 }
             }
 

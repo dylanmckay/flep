@@ -49,7 +49,7 @@ impl Session
         if let Session::Ready(ref ready) = *self {
             Ok(ready)
         } else {
-            Err(Error::Protocol(protocol::Error::Client(protocol::ClientError::NotLoggedIn)))
+            Err(protocol::Error::from_kind(protocol::ErrorKind::NotLoggedIn.into()).into())
         }
     }
 
@@ -57,7 +57,7 @@ impl Session
         if let Session::Ready(ref mut ready) = *self {
             Ok(ready)
         } else {
-            Err(Error::Protocol(protocol::Error::Client(protocol::ClientError::NotLoggedIn)))
+            Err(protocol::Error::from_kind(protocol::ErrorKind::NotLoggedIn.into()).into())
         }
     }
 
@@ -66,7 +66,7 @@ impl Session
             Ok(login)
         } else {
             // FIXME: return a more appropriate error.
-            Err(Error::Protocol(protocol::Error::Client(protocol::ClientError::NotLoggedIn)))
+            Err(protocol::Error::from_kind(protocol::ErrorKind::NotLoggedIn.into()).into())
         }
     }
 
@@ -75,7 +75,7 @@ impl Session
             Ok(login)
         } else {
             // FIXME: return a more appropriate error.
-            Err(Error::Protocol(protocol::Error::Client(protocol::ClientError::NotLoggedIn)))
+            Err(protocol::Error::from_kind(protocol::ErrorKind::NotLoggedIn.into()).into())
         }
     }
 }
