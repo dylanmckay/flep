@@ -52,7 +52,6 @@ fn handle_protocol_event(state: &mut ClientState,
             Err(e) => return Err(e),
         };
 
-        println!("action: {:?}", action);
         match action {
             Action::Reply(reply) => {
                 reply.write(&mut connection.pi.stream)?;
@@ -107,7 +106,7 @@ fn handle_data_event(event: &mio::Event,
                                  mio::Ready::readable() | UnixReady::hup(),
                                  mio::PollOpt::edge())?;
 
-                println!("data connection established via PASV mode");
+                debug!("data connection established via PASV mode");
 
                 DataTransfer::Connecting {
                     stream: sock,
@@ -115,7 +114,7 @@ fn handle_data_event(event: &mio::Event,
                 }
             },
             DataTransfer::Connecting { stream, token } => {
-                println!("ACTIVE connection established");
+                debug!("data connection established via ACTIVE mode");
 
                 // If we received an event on a connecting socket,
                 // it must be writable.

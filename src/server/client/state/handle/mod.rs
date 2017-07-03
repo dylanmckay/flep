@@ -24,7 +24,7 @@ pub fn command(client: &mut ClientState,
                server: &mut Server) -> Result<Action, Error> {
     use protocol::CommandKind::*;
 
-    println!("received {:?}", command);
+    debug!("received command: {:?}", command);
 
     match *command {
         // User attempting to log in.

@@ -34,6 +34,8 @@ pub fn run<F,A>(server: &mut F, address: A) -> Result<(), Error>
         None => return Err("could not resolve to any addresses".into()),
     };
 
+    debug!("running server");
+
     // Setup the server socket
     let listener = TcpListener::bind(&address)?;
     let mut io = Io::new()?;
@@ -79,14 +81,14 @@ pub fn run<F,A>(server: &mut F, address: A) -> Result<(), Error>
 
                     match client_state.progress(server, &mut connection) {
                         Ok(..) => {
-                            println!("a client has connected ({})", client_state.uuid);
+                            debug!("a client has connected ({})", client_state.uuid);
                             state.clients.insert(client_state.uuid.clone(), Client {
                                 state: client_state,
                                 connection: connection,
                             });
                         },
                         Err(e) => {
-                            println!("error while progressing client: {:?}", e);
+                            info!("error while progressing client: {:?}", e);
                             drop(client_state);
                         }
                     }
@@ -95,14 +97,13 @@ pub fn run<F,A>(server: &mut F, address: A) -> Result<(), Error>
                 token => {
                     let client_uuid = state.clients.values().find(|client| client.connection.uses_token(token)).unwrap().state.uuid;
                     let mut client = if let hash_map::Entry::Occupied(entry) = state.clients.entry(client_uuid) { entry } else { unreachable!() };
-                    println!("event: {:?}", event);
 
                     let mut should_remove = false;
 
                     {
                         let mut client_data = client.get_mut();
                         if let Err(e) = client_data.handle_io_event(&event, token, server, &mut io) {
-                            println!("error while processing data from client ({}): {:?}", client_data.state.uuid, e);
+                            info!("error while processing data from client ({}): {:?}", client_data.state.uuid, e);
                             should_remove = true;
                         }
                     }
@@ -113,7 +114,7 @@ pub fn run<F,A>(server: &mut F, address: A) -> Result<(), Error>
                     }
 
                     if readiness.is_hup() {
-                        println!("client disconnected");
+                        info!("client disconnected");
                         client.remove();
                     }
                 }

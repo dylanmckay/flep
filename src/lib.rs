@@ -17,5 +17,6 @@ pub use protocol::FileType;
 pub mod server;
 pub mod io;
 pub mod fs;
+pub mod util;
 mod credentials;
 mod errors;

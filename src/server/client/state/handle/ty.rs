@@ -8,6 +8,6 @@ pub fn handle(ty: &protocol::TYPE,
 
     session.transfer_type = ty.file_type;
 
-    println!("file type set to {:?}", ty.file_type);
+    debug!("file type set to {:?}", ty.file_type);
     Ok(Action::Reply(protocol::Reply::new(protocol::reply::code::OK, "file type set")))
 }

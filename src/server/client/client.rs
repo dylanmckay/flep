@@ -45,11 +45,12 @@ fn tick(state: &mut ClientState,
             if let Some(active_transfer) = active_transfer {
                 let dtp = std::mem::replace(&mut connection.dtp, DataTransfer::None);
 
-                println!("active transfer!!!!");
+                debug!("server is ready and we have an active transfer");
                 connection.dtp = match dtp {
                     DataTransfer::None => {
                         assert_eq!(session.data_transfer_mode, DataTransferMode::Active);
 
+                        // FIXME: Don't hardcode this.
                         let addr = ("127.0.0.1", session.port.unwrap()).to_socket_addrs()?.next().unwrap();
                         let stream = mio::tcp::TcpStream::connect(&addr)?;
 
@@ -59,7 +60,7 @@ fn tick(state: &mut ClientState,
                                          mio::Ready::writable(),
                                          mio::PollOpt::edge())?;
 
-                        println!("Establishing a DTP connection for ACTIVE mode");
+                        debug!("establishing a DTP connection for ACTIVE mode");
 
                         // We aren't ready to send data just yet.
                         session.active_transfer = Some(active_transfer);
@@ -70,7 +71,7 @@ fn tick(state: &mut ClientState,
                         }
                     },
                     DataTransfer::Connected { mut stream, .. } => {
-                        println!("sent file");
+                        debug!("DTP stream is connected, sending data");
 
                         connection.send_command(&protocol::command::TYPE {
                             file_type: active_transfer.file_type,
@@ -80,9 +81,9 @@ fn tick(state: &mut ClientState,
                         stream.flush()?;
                         drop(stream);
 
-                        std::thread::sleep(std::time::Duration::from_millis(800));
                         connection.send_reply(protocol::Reply::new(226, "Transfer complete"))?;
 
+                        debug!("completed active transfer");
                         DataTransfer::None
                     },
                     state => {

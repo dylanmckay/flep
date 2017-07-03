@@ -22,6 +22,8 @@ impl flep::server::Server for Server
 }
 
 fn main() {
+    flep::util::log::initialize_default().expect("could not setup logging");
+
     let mut file_system = flep::fs::Memory::new();
     file_system.write(&Path::new("README.txt"),
                       "hello there\nit is me".as_bytes().to_owned()).unwrap();
