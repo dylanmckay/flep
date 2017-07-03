@@ -1,5 +1,6 @@
-use {Error, DataTransferMode, server, protocol};
+use {Error, protocol};
 use server::client::{ClientState, Action};
+use io::DataTransferMode;
 
 pub fn handle_pasv(client: &mut ClientState)
     -> Result<Action, Error> {

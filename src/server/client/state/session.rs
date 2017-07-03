@@ -1,4 +1,5 @@
-use {Credentials, Error, FileType, DataTransferMode};
+use {Credentials, Error, FileType};
+use io::DataTransferMode;
 use {server, protocol};
 
 use std::path::PathBuf;
@@ -63,15 +64,6 @@ impl Session
 
     pub fn expect_login(&self) -> Result<&Login, Error> {
         if let Session::Login(ref login) = *self {
-            Ok(login)
-        } else {
-            // FIXME: return a more appropriate error.
-            Err(protocol::Error::from_kind(protocol::ErrorKind::NotLoggedIn.into()).into())
-        }
-    }
-
-    pub fn expect_login_mut(&mut self) -> Result<&mut Login, Error> {
-        if let Session::Login(ref mut login) = *self {
             Ok(login)
         } else {
             // FIXME: return a more appropriate error.

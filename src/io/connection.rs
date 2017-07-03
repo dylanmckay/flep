@@ -1,5 +1,6 @@
-use {Io, Error};
+use Error;
 use protocol;
+use super::Io;
 
 use mio::tcp::{TcpStream, TcpListener};
 use mio;

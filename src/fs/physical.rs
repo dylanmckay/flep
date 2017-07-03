@@ -1,17 +1,20 @@
 use Error;
-use server::FileSystem;
+use super::FileSystem;
 
 use std::path::{Path, PathBuf};
 use std::fs;
 
-/// A folder on the physical filesystem.
+/// A folder on the physical on-disk filesystem.
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Physical
 {
+    /// The root directory.
     pub root: PathBuf,
 }
 
 impl Physical
 {
+    /// Creates a new physical filesystem.
     pub fn new<P>(root: P) -> Self
         where P: Into<PathBuf> {
         Physical {

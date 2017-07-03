@@ -1,6 +1,7 @@
-use {Connection, DataTransfer, DataTransferMode, Error, Io};
+use {Error, protocol};
+use io::{Connection, DataTransfer, DataTransferMode, Io};
+use server::Server;
 use server::client::{ClientState, Session};
-use {server, protocol};
 
 use std::net::ToSocketAddrs;
 use std::io::prelude::*;
@@ -24,12 +25,12 @@ impl Client
     pub fn handle_io_event(&mut self,
                            event: &mio::Event,
                            the_token: mio::Token,
-                           ftp: &mut server::FileTransferProtocol,
+                           server: &mut Server,
                            io: &mut Io)
         -> Result<(), Error> {
         super::client_io::handle_event(&mut self.state, event,
                                        &mut self.connection, the_token,
-                                       ftp, io)
+                                       server, io)
     }
 }
 

@@ -15,25 +15,26 @@ mod mkd;
 
 use Error;
 use server::client::{ClientState, Action};
-use {server, protocol};
+use server::Server;
+use protocol;
 
 /// Handles a command sent to a server from a client.
 pub fn command(client: &mut ClientState,
                command: &protocol::CommandKind,
-               ftp: &mut server::FileTransferProtocol) -> Result<Action, Error> {
+               server: &mut Server) -> Result<Action, Error> {
     use protocol::CommandKind::*;
 
     println!("received {:?}", command);
 
     match *command {
         // User attempting to log in.
-        USER(ref user) => self::user::handle(user, client, ftp),
-        PASS(ref pass) => self::pass::handle(pass, client, ftp),
+        USER(ref user) => self::user::handle(user, client, server),
+        PASS(ref pass) => self::pass::handle(pass, client, server),
         PWD(..) => self::pwd::handle(client),
         CWD(ref cwd) => self::cwd::handle(cwd, client),
         CDUP(..) => self::cdup::handle(client),
-        MKD(ref mkd) => self::mkd::handle(mkd, client, ftp),
-        LIST(ref list) => self::list::handle(list, client, ftp),
+        MKD(ref mkd) => self::mkd::handle(mkd, client, server),
+        LIST(ref list) => self::list::handle(list, client, server),
         // ClientState requesting information about the server system.
         SYST(..) => self::syst::handle(),
         FEAT(..) => self::feat::handle(),
@@ -42,7 +43,7 @@ pub fn command(client: &mut ClientState,
         EPSV(..) => self::passive::handle_epsv(client),
         PORT(ref port) => self::active::handle_port(port, client),
         QUIT(..) => self::quit::handle(),
-        RETR(ref retr) => self::retr::handle(retr, client, ftp),
+        RETR(ref retr) => self::retr::handle(retr, client, server),
         EPRT(..) => self::unimplemented("EPRT"),
         ABOR(..) => self::unimplemented("ABOR"),
         ACCT(..) => self::unimplemented("ACCT"),

@@ -1,19 +1,20 @@
 use {Credentials, Error};
+use server::Server;
 use server::client::state::{Session, session};
 use server::client::{ClientState, Action};
-use {server, protocol};
+use protocol;
 
 /// Handle the 'PASS' command.
 pub fn handle(pass: &protocol::PASS,
               client: &mut ClientState,
-              ftp: &mut server::FileTransferProtocol)
+              server: &mut Server)
     -> Result<Action, Error> {
     let session = client.session.expect_login()?.clone();
 
     if let session::Login::WaitingForPassword { username } = session {
         let credentials = Credentials { username: username.to_owned(), password: Some(pass.password.to_owned()) };
 
-        if ftp.authenticate_user(&credentials) {
+        if server.authenticate_user(&credentials) {
             client.session = Session::Ready(session::Ready::new(credentials));
             Ok(Action::Reply(protocol::reply::pass::logged_in()))
         } else {

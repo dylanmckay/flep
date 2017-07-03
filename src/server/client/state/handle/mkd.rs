@@ -1,11 +1,13 @@
-use {Error, server, protocol};
+use {Error, protocol};
+use server::Server;
 use server::client::{ClientState, Action};
+
 use std::path::Path;
 
 /// Handle the 'MKD' command.
 pub fn handle(mkd: &protocol::MKD,
               client: &mut ClientState,
-              ftp: &mut server::FileTransferProtocol)
+              server: &mut Server)
 -> Result<Action, Error> {
     let session = client.session.expect_ready()?;
 
@@ -20,7 +22,7 @@ pub fn handle(mkd: &protocol::MKD,
     let parent = path.parent().unwrap();
     let folder_name = path.file_name().unwrap().to_str().unwrap().to_owned();
 
-    ftp.file_system_mut().mkdir(&parent, folder_name)?;
+    server.file_system_mut().mkdir(&parent, folder_name)?;
 
     Ok(Action::Reply(protocol::Reply::new(protocol::reply::code::PATHNAME_CREATED,
                      "created directory")))
