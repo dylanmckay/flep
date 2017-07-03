@@ -47,7 +47,8 @@ impl ClientState
 
         self.session = match session {
             Session::PendingWelcome => {
-                println!("sending welcome");
+                debug!("sending welcome to client");
+
                 let welcome = protocol::Reply::new(protocol::reply::code::OK, server.welcome_message());
                 welcome.write(&mut connection.pi.stream)?;
 
