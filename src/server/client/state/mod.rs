@@ -5,7 +5,7 @@
 pub use self::session::Session;
 
 use {Error, server, protocol};
-use io::{Connection, DataTransferMode};
+use io::Connection;
 
 use std;
 
@@ -56,20 +56,5 @@ impl ClientState
         };
 
         Ok(())
-    }
-
-    /// Checks whether the client expects a connection on a given port.
-    pub fn wants_connection_on_port(&self, port: u16) -> bool {
-        if let Session::Ready(ref session) = self.session {
-            if let DataTransferMode::Passive { .. } = session.data_transfer_mode {
-                // We only expect incoming connections for this client if we're in
-                // passive mode and have been told to expect a conn on this port.
-                session.port == Some(port)
-            } else {
-                false
-            }
-        } else {
-            false
-        }
     }
 }

@@ -70,15 +70,6 @@ impl Session
             Err(protocol::Error::from_kind(protocol::ErrorKind::NotLoggedIn.into()).into())
         }
     }
-
-    pub fn expect_login_mut(&mut self) -> Result<&mut Login, Error> {
-        if let Session::Login(ref mut login) = *self {
-            Ok(login)
-        } else {
-            // FIXME: return a more appropriate error.
-            Err(protocol::Error::from_kind(protocol::ErrorKind::NotLoggedIn.into()).into())
-        }
-    }
 }
 
 impl Ready
