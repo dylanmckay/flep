@@ -19,10 +19,7 @@ pub fn handle(mkd: &protocol::MKD,
         session.working_dir.join(path)
     };
 
-    let parent = path.parent().unwrap();
-    let folder_name = path.file_name().unwrap().to_str().unwrap().to_owned();
-
-    server.file_system_mut().create_dir(&parent, folder_name)?;
+    server.file_system_mut().create_dir(&path)?;
 
     Ok(Action::Reply(protocol::Reply::new(protocol::reply::code::PATHNAME_CREATED,
                      "created directory")))

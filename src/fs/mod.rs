@@ -19,7 +19,7 @@ pub trait FileSystem
     fn list(&self, path: &Path) -> Result<Vec<String>, Error>;
 
     /// Make a new directory.
-    fn create_dir(&mut self, parent: &Path, name: String) -> Result<(), Error>;
+    fn create_dir(&mut self, path: &Path) -> Result<(), Error>;
 
     /// Write data into a file.
     fn write_file(&mut self, path: &Path, data: Vec<u8>) -> Result<(), Error>;

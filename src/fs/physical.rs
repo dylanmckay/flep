@@ -39,11 +39,11 @@ impl FileSystem for Physical
         Ok(names)
     }
 
-    fn create_dir(&mut self, _parent: &Path, _name: String) -> Result<(), Error> {
+    fn create_dir(&mut self, _path: &Path) -> Result<(), Error> {
         unimplemented!();
     }
 
-    fn write_file(&mut self, _parent: &Path, _data: Vec<u8>) -> Result<(), Error> {
+    fn write_file(&mut self, _path: &Path, _data: Vec<u8>) -> Result<(), Error> {
         unimplemented!();
     }
 

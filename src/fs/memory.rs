@@ -42,6 +42,7 @@ struct Directory
 
 impl Memory
 {
+    /// Creates a new in-memory filesystem.
     pub fn new() -> Self {
         Memory {
             root: Node {
@@ -54,6 +55,26 @@ impl Memory
     #[cfg(test)]
     fn root_dir_mut(&mut self) -> &mut Directory {
         if let NodeKind::Directory(ref mut dir) = self.root.kind { dir } else { unreachable!() }
+    }
+
+    fn find_parent_and_name(&self, path: &Path) -> Result<(&Node, String), Error> {
+        if let Some(parent) = path.parent() {
+            let file_name = path.file_name().unwrap().to_str().unwrap().to_owned();
+            Ok((self.find_node(parent)?, file_name))
+        } else {
+            // FIXME: better error handling.
+            panic!("no parent");
+        }
+    }
+
+    fn find_parent_and_name_mut(&mut self, path: &Path) -> Result<(&mut Node, String), Error> {
+        if let Some(parent) = path.parent() {
+            let file_name = path.file_name().unwrap().to_str().unwrap().to_owned();
+            Ok((self.find_node_mut(parent)?, file_name))
+        } else {
+            // FIXME: better error handling.
+            panic!("no parent");
+        }
     }
 
     fn find_node(&self, path: &Path) -> Result<&Node, Error> {
@@ -148,58 +169,61 @@ impl FileSystem for Memory
             NodeKind::Directory(ref dir) => {
                 Ok(dir.nodes.values().map(|node| node.name.clone()).collect())
             },
+            // FIXME: better error handling
             NodeKind::File(..) => panic!("this is not a directory"),
         }
     }
 
-    fn create_dir(&mut self, parent: &Path, name: String) -> Result<(), Error> {
-        let parent = self.find_node_mut(parent)?;
+    fn create_dir(&mut self, path: &Path) -> Result<(), Error> {
+        let (parent, file_name) = self.find_parent_and_name_mut(path)?;
 
         if let NodeKind::Directory(ref mut dir) = parent.kind {
-            dir.nodes.insert(name.clone(), Node {
-                name: name,
+            dir.nodes.insert(file_name.clone(), Node {
+                name: file_name,
                 kind: NodeKind::Directory(Directory { nodes: HashMap::new() }),
             });
             Ok(())
         } else {
+            // FIXME: better error handling
             panic!("not a dir")
         }
     }
 
     fn write_file(&mut self, path: &Path, data: Vec<u8>) -> Result<(), Error> {
-        let parent = self.find_node_mut(path.parent().unwrap())?;
+        let (parent, file_name) = self.find_parent_and_name_mut(path)?;
 
         if let NodeKind::Directory(ref mut dir) = parent.kind {
-            let file_name = path.file_name().unwrap().to_str().unwrap().to_owned();
             dir.nodes.insert(file_name.clone(), Node {
                 name: file_name,
                 kind: NodeKind::File(File { data: data }),
             });
             Ok(())
         } else {
+            // FIXME: better error handling
             panic!("parent must be a directory");
         }
     }
 
     fn read_file(&self, path: &Path) -> Result<Vec<u8>, Error> {
-        let parent = self.find_node(path.parent().unwrap())?;
+        let (parent, file_name) = self.find_parent_and_name(path)?;
 
         if let NodeKind::Directory(ref dir) = parent.kind {
-            let file_name = path.file_name().unwrap().to_str().unwrap().to_owned();
-
             if let Some(ref node) = dir.nodes.get(&file_name) {
                 match node.kind {
                     NodeKind::File(ref file) => {
                         Ok(file.data.clone())
                     },
                     NodeKind::Directory(..) => {
+                        // FIXME: better error handling
                         panic!("cannot read a directory");
                     },
                 }
             } else {
+                // FIXME: better error handling
                 panic!("file does not exist");
             }
         } else {
+            // FIXME: better error handling
             panic!("parent must be a directory");
         }
     }
@@ -280,7 +304,7 @@ mod test
         #[test]
         fn correctly_creates_a_top_level_dir() {
             let mut fs = Memory::new();
-            fs.create_dir(&Path::new("/"), "bar".to_string()).unwrap();
+            fs.create_dir(&Path::new("/bar")).unwrap();
 
             assert_eq!(fs.root, Node {
                 name: super::super::ROOT_DIR_NAME.to_owned(),

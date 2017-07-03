@@ -26,8 +26,8 @@ fn main() {
 
     let mut file_system = flep::fs::Memory::new();
     // FIXME: add methods to `Memory` to ease construction.
-    file_system.write(&Path::new("README.txt"),
-                      "hello there\nit is me".as_bytes().to_owned()).unwrap();
+    file_system.write_file(&Path::new("README.txt"),
+                           "hello there\nit is me".as_bytes().to_owned()).unwrap();
 
     let mut server = Server { file_system: file_system };
     flep::server::run(&mut server, "127.0.0.1:2222")
