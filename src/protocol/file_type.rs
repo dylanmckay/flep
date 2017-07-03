@@ -1,7 +1,7 @@
-use {Argument, Error};
-use std::io::prelude::*;
+use {Argument, Error, ErrorKind};
 
 use byteorder::ReadBytesExt;
+use std::io::prelude::*;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum FileType
@@ -43,8 +43,12 @@ impl Argument for FileType
             'L' => {
                 assert_eq!(read.read_u8()? as char, ' ');
                 let bits_per_byte_char = read.read_u8()? as char;
-                let bits_per_byte = bits_per_byte_char.to_string().parse().unwrap();
-                Ok(FileType::LocalFormat { bits_per_byte: bits_per_byte })
+
+                match bits_per_byte_char.to_string().parse() {
+                    Ok(bits_per_byte) => Ok(FileType::LocalFormat { bits_per_byte: bits_per_byte }),
+                    Err(..) => Err(ErrorKind::InvalidArgument(
+                        format!("file type should be single digit number, got '{}'", bits_per_byte_char)).into()),
+                }
             },
             c => panic!("invalid file type char: '{}'", c),
         }

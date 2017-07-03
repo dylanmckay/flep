@@ -18,6 +18,7 @@ path = "src/lib.rs"
 [workspace]
 
 [dependencies]
+flep_protocol = { path = "src/protocol", version = "0.1.2" }
 mio = "0.6"
 uuid = { version = "0.5", features = ["v4"] }
-flep_protocol = { path = "src/protocol", version = "0.1.2" }
+error-chain = "0.10"

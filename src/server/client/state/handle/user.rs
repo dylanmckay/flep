@@ -26,8 +26,8 @@ pub fn handle(user: &protocol::USER,
             Ok(Action::Reply(protocol::reply::user::need_password()))
         }
     } else {
-        Err(protocol::Error::Client(protocol::ClientError::InvalidCommandSequence {
-            message: "the client wait until we send the welcome message to log in".to_owned(),
-        }).into())
+        Err(protocol::Error::from_kind(protocol::ErrorKind::InvalidCommandSequence(
+            "the client wait until we send the welcome message to log in".to_owned(),
+        )).into())
     }
 }

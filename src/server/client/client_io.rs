@@ -1,6 +1,7 @@
-use {Connection, DataTransfer, DataTransferMode, Error, Io};
+use {Connection, DataTransfer, DataTransferMode, Error, ErrorKind, Io};
 use server::client::Action;
 use server::ClientState;
+use protocol::reply::AsReplyCode;
 use {server, protocol};
 
 use std::io::prelude::*;
@@ -42,14 +43,12 @@ fn handle_protocol_event(state: &mut ClientState,
         let command = protocol::CommandKind::read(&mut data)?;
         let action = match state.handle_command(&command, ftp) {
             Ok(action) => action,
-            Err(e) => match e {
+            Err(Error(ErrorKind::Protocol(e), _))  => {
                 // If it was state error, tell them.
-                Error::Protocol(protocol::Error::Client(e)) => {
-                    println!("error from state: {}", e.message());
-                    Action::Reply(protocol::Reply::new(e.reply_code(), format!("error: {}", e.message())))
-                },
-                e => return Err(e),
+                Action::Reply(protocol::Reply::new(e.as_reply_code(),
+                    format!("error: {}", e)))
             },
+            Err(e) => return Err(e),
         };
 
         println!("action: {:?}", action);
@@ -60,7 +59,7 @@ fn handle_protocol_event(state: &mut ClientState,
             Action::EstablishDataConnection { reply, mode } => {
                 reply.write(&mut connection.pi.stream)?;
 
-                let mut session = state.session.expect_ready_mut().unwrap();
+                let mut session = state.session.expect_ready_mut()?;
                 session.data_transfer_mode = mode;
 
                 match mode {
@@ -71,7 +70,7 @@ fn handle_protocol_event(state: &mut ClientState,
                 }
             },
             Action::Transfer(transfer) => {
-                let mut session = state.session.expect_ready_mut().unwrap();
+                let mut session = state.session.expect_ready_mut()?;
                 session.active_transfer = Some(transfer);
 
                 let reply = if let DataTransfer::Connected { .. } = connection.dtp {

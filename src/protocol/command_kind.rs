@@ -142,7 +142,7 @@ impl CommandKind
         assert_eq!(line_bytes.last(), Some(&('\r' as u8)), "new lines should be CR+LF, not just LF");
         line_bytes.pop();
 
-        let line_string = String::from_utf8(line_bytes).unwrap();
+        let line_string = String::from_utf8(line_bytes)?;
 
         // Split the line up.
         let (command_name, payload) = if line_string.contains(' ') {
@@ -158,7 +158,7 @@ impl CommandKind
             ( $cmd_name:ident => $( $name:ident ),+ ) => {
                 match command_name {
                     $( stringify!($name) => Ok(CommandKind::$name($name::read_payload(&mut payload_reader)?)), )+
-                    _ => Err(Error::Client(ClientError::InvalidCommand { name: command_name.to_owned() })),
+                    _ => Err(ErrorKind::InvalidCommand(command_name.to_owned()).into()),
                 }
             }
         }

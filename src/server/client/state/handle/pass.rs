@@ -20,8 +20,8 @@ pub fn handle(pass: &protocol::PASS,
             Ok(Action::Reply(protocol::reply::pass::not_logged_in("invalid credentials")))
         }
     } else {
-        Err(protocol::Error::Client(protocol::ClientError::InvalidCommandSequence {
-            message: "the client must send password immediately after the username is sent".to_owned(),
-        }).into())
+        Err(protocol::Error::from_kind(protocol::ErrorKind::InvalidCommandSequence(
+            "the client must send password immediately after the username is sent".to_owned()
+        )).into())
     }
 }

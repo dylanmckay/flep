@@ -1,8 +1,16 @@
 //! Reply code definitions.
 
+use {Error, ErrorKind};
+
 /// A reply code.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Code(pub u16);
+
+/// Something which we can derive a reply code from.
+pub trait AsReplyCode {
+    /// Gets the reply code for the object.
+    fn as_reply_code(&self) -> Code;
+}
 
 pub const OK: Code = Code(200);
 pub const INVALID_COMMAND: Code = Code(500);
@@ -10,7 +18,7 @@ pub const SYNTAX_ERROR: Code = Code(501);
 pub const COMMAND_NOT_IMPLEMENTED_SUPERFLOUS: Code = Code(202);
 pub const COMMAND_NOT_IMPLEMENTED: Code = Code(502);
 pub const BAD_COMMAND_SEQUENCE: Code = Code(503);
-pub const COMMAND_NOT_IMPLEMENTED_FOR_PARAMETE: Code = Code(504);
+pub const COMMAND_NOT_IMPLEMENTED_FOR_PARAMETER: Code = Code(504);
 pub const RESTART_MARKER_REPLY: Code = Code(110);
 pub const STATUS_OR_HELP_REPLY: Code = Code(211);
 pub const DIRECTORY_STATUS: Code = Code(212);
@@ -44,6 +52,42 @@ pub const REQUESTED_ACTION_ABORTED_PAGE_TYPE_UNKNOWN: Code = Code(551);
 pub const REQUESTED_ACTION_NOT_TAKEN_INSUFFICIENT_STORAGE: Code = Code(452);
 pub const REQUESTED_FILE_ACTION_ABORTED_EXCEEDED_ALLOCATION: Code = Code(552);
 pub const INVALID_FILE_NAME: Code = Code(553);
+
+impl AsReplyCode for ErrorKind {
+    fn as_reply_code(&self) -> Code {
+        use ErrorKind::*;
+
+        match *self {
+            InvalidCommand(..) => INVALID_COMMAND,
+            // If the othe end sends us invalid text, report it as an
+            // invalid command.
+            InvalidUtf8(..) => INVALID_COMMAND,
+            NotLoggedIn => USER_NOT_LOGGED_IN,
+            InvalidArgument(..) => SYNTAX_ERROR,
+            InvalidCommandSequence(..) => BAD_COMMAND_SEQUENCE,
+            UnimplementedCommand(..) => COMMAND_NOT_IMPLEMENTED,
+            Msg(..) | Io(..)
+                => REQUESTED_ACTION_ABORTED_LOCAL_ERROR_IN_PROCESSING,
+        }
+    }
+}
+
+impl AsReplyCode for Error {
+    fn as_reply_code(&self) -> Code {
+        self.kind().as_reply_code()
+    }
+}
+
+impl<T> AsReplyCode for Result<T, Error>
+{
+    fn as_reply_code(&self) -> Code {
+        match *self {
+            Ok(..) => OK,
+            Err(ref e) => e.as_reply_code(),
+        }
+    }
+}
+
 
 impl Into<Code> for u16 {
     fn into(self) -> Code { Code(self) }
