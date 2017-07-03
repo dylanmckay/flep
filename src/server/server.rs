@@ -1,7 +1,7 @@
+use Error;
 use server::FileTransferProtocol;
 use server::client::{Client, ClientState};
-
-use {Connection, Io, Error};
+use io::{Connection, Io, Interpreter, DataTransfer};
 
 use uuid::Uuid;
 use mio::unix::UnixReady;
@@ -74,11 +74,11 @@ pub fn run<F,A>(ftp: &mut F, address: A) -> Result<(), Error>
                     let mut client_state = ClientState::new();
 
                     let mut connection = Connection {
-                        pi: ::connection::Interpreter {
+                        pi: Interpreter {
                             stream: sock,
                             token: token,
                         },
-                        dtp: ::connection::DataTransfer::None,
+                        dtp: DataTransfer::None,
                     };
 
                     match client_state.progress(ftp, &mut connection) {

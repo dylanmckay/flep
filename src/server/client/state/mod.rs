@@ -4,8 +4,8 @@
 
 pub use self::session::Session;
 
-use {Connection, DataTransferMode, Error};
-use {server, protocol};
+use {Error, server, protocol};
+use io::{Connection, DataTransferMode};
 
 use std;
 

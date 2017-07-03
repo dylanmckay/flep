@@ -1,5 +1,5 @@
-use DataTransferMode;
 use server::Transfer;
+use io::DataTransferMode;
 use protocol;
 
 /// An action to take after receiving a command.

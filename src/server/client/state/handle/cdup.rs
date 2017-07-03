@@ -1,4 +1,4 @@
-use {Error, server, protocol};
+use {Error, protocol};
 use server::client::{Action, ClientState};
 
 /// Handle the 'CDUP' command.

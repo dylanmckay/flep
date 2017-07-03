@@ -1,5 +1,6 @@
-use {Connection, DataTransfer, DataTransferMode, Error, ErrorKind, Io};
+use {Error, ErrorKind};
 use server::client::{ClientState, Action};
+use io::{Connection, DataTransfer, DataTransferMode, Io};
 use protocol::reply::AsReplyCode;
 use {server, protocol};
 

@@ -1,6 +1,6 @@
-use {Connection, DataTransfer, DataTransferMode, Error, Io};
+use {Error, server, protocol};
+use io::{Connection, DataTransfer, DataTransferMode, Io};
 use server::client::{ClientState, Session};
-use {server, protocol};
 
 use std::net::ToSocketAddrs;
 use std::io::prelude::*;

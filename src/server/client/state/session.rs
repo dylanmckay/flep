@@ -1,4 +1,5 @@
-use {Credentials, Error, FileType, DataTransferMode};
+use {Credentials, Error, FileType};
+use io::DataTransferMode;
 use {server, protocol};
 
 use std::path::PathBuf;
