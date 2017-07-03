@@ -8,7 +8,7 @@ pub struct Server
     file_system: flep::fs::Memory,
 }
 
-impl flep::server::FileTransferProtocol for Server
+impl flep::server::Server for Server
 {
     fn welcome_message(&self) -> String { "Hello there!".to_string() }
 

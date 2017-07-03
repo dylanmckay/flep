@@ -1,5 +1,5 @@
 use Error;
-use server::FileTransferProtocol;
+use server::Server;
 use server::client::{Client, ClientState};
 use io::{Connection, Io, Interpreter, DataTransfer};
 
@@ -25,8 +25,8 @@ struct ServerState
 ///
 /// Sets up an FTP server locally and begins to wait for clients
 /// to connect.
-pub fn run<F,A>(ftp: &mut F, address: A) -> Result<(), Error>
-    where F: FileTransferProtocol,
+pub fn run<F,A>(server: &mut F, address: A) -> Result<(), Error>
+    where F: Server,
           A: ToSocketAddrs {
     let mut addresses = address.to_socket_addrs()?;
     let address = match addresses.next() {
@@ -44,10 +44,10 @@ pub fn run<F,A>(ftp: &mut F, address: A) -> Result<(), Error>
 
     // Create storage for events
     let mut events = Events::with_capacity(1024);
-    let mut server = ServerState::new();
+    let mut state = ServerState::new();
 
     loop {
-        for client_data in server.clients.values_mut() {
+        for client_data in state.clients.values_mut() {
             client_data.tick(&mut io)?;
         }
 
@@ -77,10 +77,10 @@ pub fn run<F,A>(ftp: &mut F, address: A) -> Result<(), Error>
                         dtp: DataTransfer::None,
                     };
 
-                    match client_state.progress(ftp, &mut connection) {
+                    match client_state.progress(server, &mut connection) {
                         Ok(..) => {
                             println!("a client has connected ({})", client_state.uuid);
-                            server.clients.insert(client_state.uuid.clone(), Client {
+                            state.clients.insert(client_state.uuid.clone(), Client {
                                 state: client_state,
                                 connection: connection,
                             });
@@ -93,15 +93,15 @@ pub fn run<F,A>(ftp: &mut F, address: A) -> Result<(), Error>
 
                 },
                 token => {
-                    let client_uuid = server.clients.values().find(|client| client.connection.uses_token(token)).unwrap().state.uuid;
-                    let mut client = if let hash_map::Entry::Occupied(entry) = server.clients.entry(client_uuid) { entry } else { unreachable!() };
+                    let client_uuid = state.clients.values().find(|client| client.connection.uses_token(token)).unwrap().state.uuid;
+                    let mut client = if let hash_map::Entry::Occupied(entry) = state.clients.entry(client_uuid) { entry } else { unreachable!() };
                     println!("event: {:?}", event);
 
                     let mut should_remove = false;
 
                     {
                         let mut client_data = client.get_mut();
-                        if let Err(e) = client_data.handle_io_event(&event, token, ftp, &mut io) {
+                        if let Err(e) = client_data.handle_io_event(&event, token, server, &mut io) {
                             println!("error while processing data from client ({}): {:?}", client_data.state.uuid, e);
                             should_remove = true;
                         }

@@ -1,8 +1,9 @@
 use {Error, ErrorKind};
 use server::client::{ClientState, Action};
+use server::Server;
 use io::{Connection, DataTransfer, DataTransferMode, Io};
 use protocol::reply::AsReplyCode;
-use {server, protocol};
+use protocol;
 
 use std::io::prelude::*;
 use std::io;
@@ -16,11 +17,11 @@ pub fn handle_event(state: &mut ClientState,
                     event: &mio::Event,
                     connection: &mut Connection,
                     the_token: mio::Token,
-                    ftp: &mut server::FileTransferProtocol,
+                    server: &mut Server,
                     io: &mut Io)
     -> Result<(), Error> {
     if the_token == connection.pi.token && event.readiness().is_readable() {
-        handle_protocol_event(state, event, connection, io, ftp)
+        handle_protocol_event(state, event, connection, io, server)
     } else {
         handle_data_event(event, connection, io)
     }
@@ -31,7 +32,7 @@ fn handle_protocol_event(state: &mut ClientState,
                          event: &mio::Event,
                          connection: &mut Connection,
                          io: &mut Io,
-                         ftp: &mut server::FileTransferProtocol)
+                         server: &mut Server)
     -> Result<(), Error> {
     let mut buffer: [u8; 10000] = [0; 10000];
     let bytes_written = connection.pi.stream.read(&mut buffer)?;
@@ -41,7 +42,7 @@ fn handle_protocol_event(state: &mut ClientState,
 
     if !data.get_ref().is_empty() {
         let command = protocol::CommandKind::read(&mut data)?;
-        let action = match state.handle_command(&command, ftp) {
+        let action = match state.handle_command(&command, server) {
             Ok(action) => action,
             Err(Error(ErrorKind::Protocol(e), _))  => {
                 // If it was state error, tell them.

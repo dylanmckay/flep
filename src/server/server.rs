@@ -2,7 +2,7 @@ use Credentials;
 use fs::FileSystem;
 
 /// An FTP server instance.
-pub trait FileTransferProtocol
+pub trait Server
 {
     /// Gets the welcome message shown when connecting to the server.
     fn welcome_message(&self) -> String;

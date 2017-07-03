@@ -1,12 +1,13 @@
 use {Credentials, Error};
+use server::Server;
 use server::client::state::{Session, session};
 use server::client::{ClientState, Action};
-use {server, protocol};
+use protocol;
 
 /// Handle the 'USER' command.
 pub fn handle(user: &protocol::USER,
               client: &mut ClientState,
-              ftp: &mut server::FileTransferProtocol)
+              server: &mut Server)
     -> Result<Action, Error> {
     let session = client.session.expect_login()?.clone();
 
@@ -14,7 +15,7 @@ pub fn handle(user: &protocol::USER,
         let credentials = Credentials { username: user.username.to_owned(), password: None };
 
         // The user may authenticate with no password
-        if ftp.authenticate_user(&credentials) {
+        if server.authenticate_user(&credentials) {
             client.session = Session::Ready(session::Ready::new(credentials));
             Ok(Action::Reply(protocol::reply::user::logged_in()))
         } else {
