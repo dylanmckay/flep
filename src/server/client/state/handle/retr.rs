@@ -10,7 +10,7 @@ pub fn handle(retr: &protocol::RETR,
     -> Result<Action, Error> {
     client.session.expect_ready()?;
 
-    let data = server.file_system().read(&Path::new(&retr.remote_filename))?;
+    let data = server.file_system().read_file(&Path::new(&retr.remote_filename))?;
 
     Ok(Action::Transfer(server::Transfer {
         file_type: FileType::ascii(),

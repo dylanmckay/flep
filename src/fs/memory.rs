@@ -152,7 +152,7 @@ impl FileSystem for Memory
         }
     }
 
-    fn mkdir(&mut self, parent: &Path, name: String) -> Result<(), Error> {
+    fn create_dir(&mut self, parent: &Path, name: String) -> Result<(), Error> {
         let parent = self.find_node_mut(parent)?;
 
         if let NodeKind::Directory(ref mut dir) = parent.kind {
@@ -166,7 +166,7 @@ impl FileSystem for Memory
         }
     }
 
-    fn write(&mut self, path: &Path, data: Vec<u8>) -> Result<(), Error> {
+    fn write_file(&mut self, path: &Path, data: Vec<u8>) -> Result<(), Error> {
         let parent = self.find_node_mut(path.parent().unwrap())?;
 
         if let NodeKind::Directory(ref mut dir) = parent.kind {
@@ -181,7 +181,7 @@ impl FileSystem for Memory
         }
     }
 
-    fn read(&self, path: &Path) -> Result<Vec<u8>, Error> {
+    fn read_file(&self, path: &Path) -> Result<Vec<u8>, Error> {
         let parent = self.find_node(path.parent().unwrap())?;
 
         if let NodeKind::Directory(ref dir) = parent.kind {
@@ -272,7 +272,7 @@ mod test
         }
     }
 
-    mod mkdir {
+    mod create_dir {
         use super::super::{Node, NodeKind, Directory, FileSystem};
         pub use super::*;
         use std::path::Path;
@@ -280,7 +280,7 @@ mod test
         #[test]
         fn correctly_creates_a_top_level_dir() {
             let mut fs = Memory::new();
-            fs.mkdir(&Path::new("/"), "bar".to_string()).unwrap();
+            fs.create_dir(&Path::new("/"), "bar".to_string()).unwrap();
 
             assert_eq!(fs.root, Node {
                 name: super::super::ROOT_DIR_NAME.to_owned(),
@@ -292,7 +292,7 @@ mod test
         }
     }
 
-    mod write {
+    mod write_file {
         use super::super::{Node, NodeKind, File, Directory, FileSystem};
         pub use super::*;
         use std::path::Path;
@@ -301,7 +301,7 @@ mod test
         fn correctly_creates_a_top_level_file() {
             let mut fs = Memory::new();
 
-            fs.write(&Path::new("/foo.txt"), vec![1,2,3]).unwrap();
+            fs.write_file(&Path::new("/foo.txt"), vec![1,2,3]).unwrap();
 
             assert_eq!(fs.root, Node {
                 name: super::super::ROOT_DIR_NAME.to_owned(),
@@ -313,7 +313,7 @@ mod test
         }
     }
 
-    mod read {
+    mod read_file {
         pub use super::*;
         use super::super::FileSystem;
         use std::path::Path;
@@ -322,8 +322,8 @@ mod test
         fn correctly_reads_a_top_level_file() {
             let mut fs = Memory::new();
 
-            fs.write(&Path::new("/foo.txt"), vec![1,2,3]).unwrap();
-            assert_eq!(fs.read(&Path::new("/foo.txt")).unwrap(), vec![1,2,3]);
+            fs.write_file(&Path::new("/foo.txt"), vec![1,2,3]).unwrap();
+            assert_eq!(fs.read_file(&Path::new("/foo.txt")).unwrap(), vec![1,2,3]);
         }
     }
 }

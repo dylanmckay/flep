@@ -19,14 +19,12 @@ pub trait FileSystem
     fn list(&self, path: &Path) -> Result<Vec<String>, Error>;
 
     /// Make a new directory.
-    /// FIXME: Maybe rename this to `create_dir` to be consistent with Rust.
-    fn mkdir(&mut self, parent: &Path, name: String) -> Result<(), Error>;
+    fn create_dir(&mut self, parent: &Path, name: String) -> Result<(), Error>;
 
     /// Write data into a file.
-    /// FIXME: Come up with a better name for this and `read`.
-    fn write(&mut self, path: &Path, data: Vec<u8>) -> Result<(), Error>;
+    fn write_file(&mut self, path: &Path, data: Vec<u8>) -> Result<(), Error>;
 
     /// Read data from a file.
-    fn read(&self, path: &Path) -> Result<Vec<u8>, Error>;
+    fn read_file(&self, path: &Path) -> Result<Vec<u8>, Error>;
 }
 

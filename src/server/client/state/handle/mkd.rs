@@ -22,7 +22,7 @@ pub fn handle(mkd: &protocol::MKD,
     let parent = path.parent().unwrap();
     let folder_name = path.file_name().unwrap().to_str().unwrap().to_owned();
 
-    server.file_system_mut().mkdir(&parent, folder_name)?;
+    server.file_system_mut().create_dir(&parent, folder_name)?;
 
     Ok(Action::Reply(protocol::Reply::new(protocol::reply::code::PATHNAME_CREATED,
                      "created directory")))
