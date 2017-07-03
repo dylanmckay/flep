@@ -6,3 +6,5 @@
 
 An FTP server library.
 
+[Documentation](https://docs.rs/flep)
+
