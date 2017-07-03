@@ -6,6 +6,8 @@ extern crate mio;
 extern crate uuid;
 #[macro_use]
 extern crate error_chain;
+#[macro_use]
+extern crate log;
 
 pub use self::credentials::Credentials;
 pub use self::errors::*;
