@@ -1,3 +1,5 @@
+//! Contains the `Server` trait.
+
 use Credentials;
 use fs::FileSystem;
 
@@ -13,3 +15,4 @@ pub trait Server
     fn file_system(&self) -> &FileSystem;
     fn file_system_mut(&mut self) -> &mut FileSystem;
 }
+

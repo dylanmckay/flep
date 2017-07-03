@@ -1,3 +1,5 @@
+//! The main server loop.
+
 use Error;
 use server::Server;
 use server::client::{Client, ClientState};

@@ -24,6 +24,7 @@ pub struct ClientState
 
 impl ClientState
 {
+    /// Creates a new client state.
     pub fn new() -> Self {
         ClientState {
             uuid: Uuid::new_v4(),
@@ -31,6 +32,7 @@ impl ClientState
         }
     }
 
+    /// Handle a command and update the state accordingly.
     pub fn handle_command(&mut self,
                       command: &protocol::CommandKind,
                       server: &mut Server)
@@ -60,3 +62,4 @@ impl ClientState
         Ok(())
     }
 }
+

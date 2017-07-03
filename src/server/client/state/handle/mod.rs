@@ -1,3 +1,5 @@
+//! Routines for handling commands.
+
 mod user;
 mod pass;
 mod pwd;

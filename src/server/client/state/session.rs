@@ -17,6 +17,7 @@ pub enum Session
     Ready(Ready),
 }
 
+/// The state of a client that is in the login process.
 #[derive(Clone, Debug)]
 pub enum Login
 {
@@ -28,6 +29,7 @@ pub enum Login
     },
 }
 
+/// The state of a client that is connected and ready for work.
 #[derive(Clone, Debug)]
 pub struct Ready
 {
@@ -77,6 +79,7 @@ impl Session
 
 impl Ready
 {
+    /// Creates a new thing.
     pub fn new(credentials: Credentials) -> Self {
         Ready {
             credentials: credentials,

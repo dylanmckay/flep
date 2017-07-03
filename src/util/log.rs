@@ -1,3 +1,5 @@
+//! Logging-related stuff.
+
 use log::{self, LogRecord, LogLevelFilter, LogMetadata};
 
 /// A trivial logger which simply prints to standard output.

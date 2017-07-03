@@ -1,3 +1,5 @@
+//! The `Transfer` type.
+
 use FileType;
 
 /// A data transfer.
