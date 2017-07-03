@@ -2,7 +2,6 @@ use server::FileTransferProtocol;
 use server::client::{Client, ClientState};
 
 use {Connection, Io, Error};
-use server::Client;
 
 use uuid::Uuid;
 use mio::unix::UnixReady;
