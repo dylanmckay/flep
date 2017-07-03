@@ -2,6 +2,7 @@ use {Credentials, Error, FileType};
 use io::DataTransferMode;
 use {server, protocol};
 
+use std::net::SocketAddr;
 use std::path::PathBuf;
 
 /// The state of a client.
@@ -38,8 +39,10 @@ pub struct Ready
     pub transfer_type: FileType,
     /// Whether the connection is active or passive.
     pub data_transfer_mode: DataTransferMode,
-    /// The port given by the 'PORT' command.
-    pub port: Option<u16>,
+
+    /// The port given by the `PORT` command.
+    /// Can be empty if passive mode is used.
+    pub client_addr: Option<SocketAddr>,
     /// The data transfer operations we have queued.
     pub active_transfer: Option<server::Transfer>,
 }
@@ -80,7 +83,7 @@ impl Ready
             working_dir: "/".into(),
             transfer_type: FileType::Binary,
             data_transfer_mode: DataTransferMode::default(),
-            port: None,
+            client_addr: None,
             active_transfer: None,
         }
     }

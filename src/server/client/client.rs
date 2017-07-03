@@ -3,21 +3,25 @@ use io::{Connection, DataTransfer, DataTransferMode, Io};
 use server::Server;
 use server::client::{ClientState, Session};
 
-use std::net::ToSocketAddrs;
 use std::io::prelude::*;
 use std;
 
 use mio::unix::UnixReady;
 use mio;
 
+/// A client from the perspective of a server.
 pub struct Client
 {
+    /// The current state of the client.
     pub state: ClientState,
+    /// The network connection to the client.
     pub connection: Connection,
 }
 
 impl Client
 {
+    /// Attempts to update the state of the client with any
+    /// information received from the network.
     pub fn tick(&mut self, io: &mut Io) -> Result<(), Error> {
         self::tick(&mut self.state, &mut self.connection, io)
     }
@@ -50,9 +54,8 @@ fn tick(state: &mut ClientState,
                     DataTransfer::None => {
                         assert_eq!(session.data_transfer_mode, DataTransferMode::Active);
 
-                        // FIXME: Don't hardcode this.
-                        let addr = ("127.0.0.1", session.port.unwrap()).to_socket_addrs()?.next().unwrap();
-                        let stream = mio::tcp::TcpStream::connect(&addr)?;
+                        let client_addr = session.client_addr.expect("attempted a transfer but client address is not set");
+                        let stream = mio::tcp::TcpStream::connect(&client_addr)?;
 
                         let token = io.allocate_token();
                         io.poll.register(&stream, token,

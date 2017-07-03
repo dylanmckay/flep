@@ -1,8 +1,10 @@
 use {Command, Error, ErrorKind};
-use std::io::prelude::*;
 
 use itertools::Itertools;
 use byteorder::{ByteOrder, NetworkEndian};
+
+use std::net::{SocketAddr, SocketAddrV4, Ipv4Addr};
+use std::io::prelude::*;
 
 /// Sets up an IPv4 port
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -12,6 +14,15 @@ pub struct PORT
     pub host_address: [u8; 4],
     /// The port number.
     pub port: u16,
+}
+
+impl PORT
+{
+    /// Get the address of the socket described by the command.
+    pub fn to_socket_addr(&self) -> SocketAddr {
+        let host = Ipv4Addr::from(self.host_address.clone());
+        SocketAddr::V4(SocketAddrV4::new(host, self.port))
+    }
 }
 
 impl Command for PORT
