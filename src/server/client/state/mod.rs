@@ -48,7 +48,7 @@ impl ClientState
             Session::PendingWelcome => {
                 println!("sending welcome");
                 let welcome = protocol::Reply::new(protocol::reply::code::OK, ftp.welcome_message());
-                welcome.write(&mut connection.pi.stream).unwrap();
+                welcome.write(&mut connection.pi.stream)?;
 
                 Session::Login(session::Login::WaitingForUsername)
             },

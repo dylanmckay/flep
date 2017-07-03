@@ -1,4 +1,4 @@
-use {Command, Error};
+use {Command, Error, ErrorKind};
 use std::io::prelude::*;
 
 use itertools::Itertools;
@@ -34,10 +34,16 @@ impl Command for PORT
         assert_eq!(payload.chars().next(), Some(' '), "missing space after command");
         let payload: String = payload.chars().skip(1).collect();
 
-        let textual_bytes: Vec<_> = payload.split(",").collect();
+        let textual_bytes: Vec<&str> = payload.split(",").collect();
         assert_eq!(textual_bytes.len(), 6, "there should be 6 bytes in a PORT payload");
 
-        let bytes: Vec<u8> = textual_bytes.into_iter().map(|b| b.parse().unwrap()).collect();
+        let bytes: Result<Vec<u8>, _> = textual_bytes.into_iter().map(|tb| match tb.parse() {
+            Ok(b) => Ok(b),
+            Err(..) => Err(Error::from_kind(ErrorKind::InvalidArgument(
+                format!("PORT addresses should be comma-separated integers")))),
+        }).collect();
+        let bytes = bytes?;
+
         let host = [bytes[0], bytes[1], bytes[2], bytes[3]];
         let port = NetworkEndian::read_u16(&bytes[4..6]);
 

@@ -11,7 +11,7 @@ pub mod server;
 
 pub mod fs;
 
-use {Connection, Io};
+use {Connection, Io, Error};
 use std::collections::hash_map;
 use std::time::Duration;
 use std::net::ToSocketAddrs;
@@ -22,23 +22,22 @@ use mio::tcp::TcpListener;
 
 const SERVER_TOKEN: Token = Token(0);
 
-pub fn run<F,A>(ftp: &mut F, address: A)
+pub fn run<F,A>(ftp: &mut F, address: A) -> Result<(), Error>
     where F: FileTransferProtocol,
           A: ToSocketAddrs {
-    let mut addresses = address.to_socket_addrs().unwrap();
+    let mut addresses = address.to_socket_addrs()?;
     let address = match addresses.next() {
         Some(addr) => addr,
         None => panic!("no address given"),
     };
 
     // Setup the server socket
-    let listener = TcpListener::bind(&address).unwrap();
-
-    let mut io = Io::new().unwrap();
+    let listener = TcpListener::bind(&address)?;
+    let mut io = Io::new()?;
 
     // Start listening for incoming connections
     io.poll.register(&listener, SERVER_TOKEN, Ready::readable(),
-                     PollOpt::edge()).unwrap();
+                     PollOpt::edge())?;
 
     // Create storage for events
     let mut events = Events::with_capacity(1024);
@@ -46,10 +45,10 @@ pub fn run<F,A>(ftp: &mut F, address: A)
 
     loop {
         for client_data in server.clients.values_mut() {
-            client_data.tick(&mut io).unwrap();
+            client_data.tick(&mut io)?;
         }
 
-        io.poll.poll(&mut events, Some(Duration::from_millis(30))).unwrap();
+        io.poll.poll(&mut events, Some(Duration::from_millis(30)))?;
 
         'events: for event in events.iter() {
             let readiness = UnixReady::from(event.readiness());
@@ -58,12 +57,12 @@ pub fn run<F,A>(ftp: &mut F, address: A)
                 SERVER_TOKEN => {
                     // Accept and drop the socket immediately, this will close
                     // the socket and notify the client of the EOF.
-                    let (sock, _) = listener.accept().unwrap();
+                    let (sock, _) = listener.accept()?;
 
                     // Increase the token accumulator so the connection gets a unique token.
                     let token = io.allocate_token();
                     io.poll.register(&sock, token, Ready::readable() | UnixReady::hup(),
-                                  PollOpt::edge()).unwrap();
+                                  PollOpt::edge())?;
 
                     let mut client_state = ClientState::new();
 

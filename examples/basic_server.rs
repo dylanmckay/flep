@@ -27,5 +27,6 @@ fn main() {
                       "hello there\nit is me".as_bytes().to_owned()).unwrap();
 
     let mut server = Server { file_system: file_system };
-    flep::server::run(&mut server, "127.0.0.1:2222");
+    flep::server::run(&mut server, "127.0.0.1:2222")
+        .expect("error whilst running server");
 }

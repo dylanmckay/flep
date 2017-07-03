@@ -59,6 +59,9 @@ impl AsReplyCode for ErrorKind {
 
         match *self {
             InvalidCommand(..) => INVALID_COMMAND,
+            // If the othe end sends us invalid text, report it as an
+            // invalid command.
+            InvalidUtf8(..) => INVALID_COMMAND,
             NotLoggedIn => USER_NOT_LOGGED_IN,
             InvalidArgument(..) => SYNTAX_ERROR,
             InvalidCommandSequence(..) => BAD_COMMAND_SEQUENCE,

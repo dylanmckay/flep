@@ -59,7 +59,7 @@ fn handle_protocol_event(state: &mut ClientState,
             Action::EstablishDataConnection { reply, mode } => {
                 reply.write(&mut connection.pi.stream)?;
 
-                let mut session = state.session.expect_ready_mut().unwrap();
+                let mut session = state.session.expect_ready_mut()?;
                 session.data_transfer_mode = mode;
 
                 match mode {
@@ -70,7 +70,7 @@ fn handle_protocol_event(state: &mut ClientState,
                 }
             },
             Action::Transfer(transfer) => {
-                let mut session = state.session.expect_ready_mut().unwrap();
+                let mut session = state.session.expect_ready_mut()?;
                 session.active_transfer = Some(transfer);
 
                 let reply = if let DataTransfer::Connected { .. } = connection.dtp {

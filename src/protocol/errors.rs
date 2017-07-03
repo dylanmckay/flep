@@ -5,17 +5,18 @@ error_chain! {
 
     foreign_links {
         Io(::std::io::Error);
+        InvalidUtf8(::std::string::FromUtf8Error);
     }
 
     errors {
-        InvalidCommand(name: String) {
-            description("received invalid command")
-            display("received invalid command: '{}'", name)
-        }
-
         NotLoggedIn {
             description("client not logged in")
             display("client not logged in")
+        }
+
+        InvalidCommand(name: String) {
+            description("received invalid command")
+            display("received invalid command: '{}'", name)
         }
 
         InvalidArgument(message: String) {
