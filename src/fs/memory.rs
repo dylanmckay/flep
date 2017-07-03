@@ -6,6 +6,7 @@ use std::path::Path;
 
 const ROOT_DIR_NAME: &'static str = "";
 
+/// An in-memory filesystem.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Memory
 {

@@ -21,14 +21,10 @@ struct ServerState
     pub clients: HashMap<Uuid, Client>,
 }
 
-impl ServerState
-{
-    /// Creates a new FTP server.
-    pub fn new() -> Self {
-        ServerState { clients: HashMap::new() }
-    }
-}
-
+/// Runs a FTP server on a given address.
+///
+/// Sets up an FTP server locally and begins to wait for clients
+/// to connect.
 pub fn run<F,A>(ftp: &mut F, address: A) -> Result<(), Error>
     where F: FileTransferProtocol,
           A: ToSocketAddrs {
@@ -125,3 +121,12 @@ pub fn run<F,A>(ftp: &mut F, address: A) -> Result<(), Error>
         }
     }
 }
+
+impl ServerState
+{
+    /// Creates a new FTP server.
+    pub fn new() -> Self {
+        ServerState { clients: HashMap::new() }
+    }
+}
+

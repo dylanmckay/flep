@@ -1,7 +1,9 @@
+//! Input/output related functionality.
+
 pub use self::connection::{Connection, Interpreter, DataTransfer,
                            DataTransferMode};
 pub use self::io::Io;
 
-pub mod connection;
-pub mod io;
+mod connection;
+mod io;
 

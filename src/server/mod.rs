@@ -1,11 +1,13 @@
+//! Utilities for setting up FTP servers.
+
 pub use self::ftp::FileTransferProtocol;
-pub use self::server::run;
+pub use self::run::run;
 
 use self::transfer::Transfer;
 
 mod ftp;
 mod transfer;
-mod server;
+mod run;
 
 mod client;
 
