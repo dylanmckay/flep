@@ -1,6 +1,6 @@
 [package]
 name = "flep"
-version = "0.1.2"
+version = "0.2.0"
 authors = ["Dylan McKay <me@dylanmckay.io>"]
 
 description = "File transfer protocol (FTP) library"
@@ -18,7 +18,7 @@ path = "src/lib.rs"
 [workspace]
 
 [dependencies]
-flep_protocol = { path = "src/protocol", version = "0.1.2" }
+flep_protocol = { path = "src/protocol", version = "0.2.0" }
 mio = "0.6"
 uuid = { version = "0.5", features = ["v4"] }
 error-chain = "0.10"
