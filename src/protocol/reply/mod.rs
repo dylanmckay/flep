@@ -1,16 +1,11 @@
 pub use self::code::{Code, AsReplyCode};
+pub use self::commands::*;
 
 pub mod code;
-
-pub mod cdup;
-pub mod cwd;
+// FIXME: make this private
 pub mod feat;
-pub mod epsv;
-pub mod pasv;
-pub mod user;
-pub mod pass;
-pub mod pwd;
-pub mod syst;
+
+mod commands;
 
 use std::io::prelude::*;
 use std::{io, fmt};

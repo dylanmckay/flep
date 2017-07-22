@@ -1,4 +1,4 @@
-use {Error, protocol};
+use {Error, ErrorKind, protocol};
 use server::Server;
 use server::client::{ClientState, Action};
 
@@ -19,8 +19,13 @@ pub fn handle(mkd: &protocol::MKD,
         session.working_dir.join(path)
     };
 
-    server.file_system_mut().create_dir(&path)?;
-
-    Ok(Action::Reply(protocol::Reply::new(protocol::reply::code::PATHNAME_CREATED,
-                     "created directory")))
+    match server.file_system_mut().create_dir(&path) {
+        Ok(..) => Ok(Action::Reply(protocol::reply::mkd::success())),
+        // IO errors are caused by the client, not us.
+        Err(Error(ErrorKind::Io(..), _)) => {
+            unimplemented!();
+        },
+        Err(e) => Err(e),
+    }
 }
+
